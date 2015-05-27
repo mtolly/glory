@@ -6,22 +6,24 @@ import Foreign
 import Foreign.C
 import qualified Graphics.UI.SDL as SDL
 import Control.Exception (bracket_)
+import Control.Concurrent (threadDelay)
 import Control.Monad
-import Control.Monad.Fix
-import UI.NCurses
+import qualified UI.NCurses as NC
 import Control.Monad.IO.Class
 
 -- | Returns Just an event if there is one currently in the queue.
-pollEvent :: (MonadIO m) => m (Maybe SDL.Event)
-pollEvent = liftIO $ alloca $ \pevt -> SDL.pollEvent pevt >>= \case
+pollSDL :: (MonadIO m) => m (Maybe SDL.Event)
+pollSDL = liftIO $ alloca $ \pevt -> SDL.pollEvent pevt >>= \case
   1 -> fmap Just $ peek pevt
   _ -> return Nothing
 
-pattern KeyPress scan <- SDL.KeyboardEvent
-  { SDL.eventType           = SDL.SDL_KEYDOWN
-  , SDL.keyboardEventRepeat = 0
-  , SDL.keyboardEventKeysym = SDL.Keysym { SDL.keysymScancode = scan }
-  }
+untilNothing :: (Monad m) => m (Maybe a) -> m [a]
+untilNothing act = act >>= \case
+  Just x  -> liftM (x :) $ untilNothing act
+  Nothing -> return []
+
+pollAllEvents :: NC.Window -> NC.Curses ([SDL.Event], [NC.Event])
+pollAllEvents w = liftM2 (,) (untilNothing pollSDL) (untilNothing $ NC.getEvent w $ Just 0)
 
 -- | Extracts and throws an SDL error if the action returns a null pointer.
 notNull :: (MonadIO m) => m (Ptr a) -> m (Ptr a)
@@ -42,45 +44,48 @@ withSDL flags = bracket_
   (code 0 $ SDL.init $ foldr (.|.) 0 flags)
   SDL.quit
 
+{-
+360 buttons:
+0 -> "A"
+1 -> "B"
+2 -> "X"
+3 -> "Y"
+4 -> "LB"
+5 -> "RB"
+6 -> "Left Click"
+7 -> "Right Click"
+8 -> "Start"
+9 -> "Back"
+10 -> "Xbox"
+11 -> "D-pad Up"
+12 -> "D-pad Down"
+13 -> "D-pad Left"
+14 -> "D-pad Right"
+-}
+
 main :: IO ()
 main = withSDL [SDL.SDL_INIT_TIMER, SDL.SDL_INIT_JOYSTICK, SDL.SDL_INIT_HAPTIC, SDL.SDL_INIT_EVENTS] $ do
-  runCurses $ do
-    w <- defaultWindow
+  NC.runCurses $ do
+    w <- NC.defaultWindow
+    _ <- NC.setCursorMode NC.CursorInvisible
+    NC.setEcho False
     njoy <- SDL.numJoysticks
     _joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
     nhap <- SDL.numHaptics
     _haps <- forM [0 .. nhap - 1] $ notNull . SDL.hapticOpen
-    fix $ \loop -> do
-      evt <- liftIO $ alloca $ \pevt -> do
-        code 1 $ SDL.waitEvent pevt
-        peek pevt
-      case evt of
-        SDL.JoyButtonEvent
-          { SDL.joyButtonEventButton = button
-          , SDL.joyButtonEventState = SDL.SDL_PRESSED
-          } -> case button of
-            0 -> message "A"
-            1 -> message "B"
-            2 -> message "X"
-            3 -> message "Y"
-            4 -> message "LB"
-            5 -> message "RB"
-            6 -> message "Left Click"
-            7 -> message "Right Click"
-            8 -> message "Start"
-            9 -> message "Back"
-            10 -> return () -- xbox button: exit
-            11 -> message "D-pad Up"
-            12 -> message "D-pad Down"
-            13 -> message "D-pad Left"
-            14 -> message "D-pad Right"
-            _ -> message $ show button
-            where message s = do
-                    updateWindow w $ do
-                      moveCursor 0 0
-                      drawLineH (Just $ Glyph ' ' []) 1000
-                      moveCursor 0 0
-                      drawString s
-                    render
-                    loop
-        _ -> loop
+    NC.updateWindow w $ NC.drawBox (Just NC.glyphLineV) (Just NC.glyphLineH)
+    NC.render
+    let loop tick = do
+          liftIO $ threadDelay 5000
+          evts <- pollAllEvents w
+          case evts of
+            ([], []) -> loop $ tick + 1
+            _ -> do
+              NC.updateWindow w $ do
+                NC.moveCursor 1 1
+                NC.drawString $ "Tick " ++ show tick
+                NC.moveCursor 2 1
+                NC.drawString $ show evts
+              NC.render
+              loop $ tick + 1
+    loop (0 :: Integer)
