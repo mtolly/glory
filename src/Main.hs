@@ -10,8 +10,9 @@ import Control.Concurrent (threadDelay)
 import Control.Monad
 import qualified UI.NCurses as NC
 import Control.Monad.IO.Class
-import Data.Maybe (mapMaybe)
+import Data.Maybe (mapMaybe, fromMaybe)
 import System.IO (hIsTerminalDevice, stdout)
+import Data.Char (toLower)
 
 -- | Returns Just an event if there is one currently in the queue.
 pollSDL :: (MonadIO m) => m (Maybe SDL.Event)
@@ -85,8 +86,44 @@ data Phase
   | TypeName Player [Player]
   deriving (Eq, Ord, Show, Read)
 
-data Player = Player String SDL.JoystickID Button360 Button360
-  deriving (Eq, Ord, Show, Read)
+data Player = Player
+  { playerName :: String
+  , playerJoystick :: SDL.JoystickID
+  , playerYes :: Button360
+  , playerNo :: Button360
+  } deriving (Eq, Ord, Show, Read)
+
+-- | Updates but does not render
+clear :: NC.Window -> NC.Curses ()
+clear w = do
+  (rows, cols) <- NC.screenSize
+  NC.updateWindow w $ do
+    forM_ [0 .. rows - 1] $ \r -> do
+      NC.moveCursor r 0
+      NC.drawLineH (Just $ NC.Glyph ' ' []) cols
+
+-- | not srs, just for funsies
+cyrillicize :: String -> String
+cyrillicize = let
+  str = "АБЦДЕФГХИЖКЛМНОПQРСТУВЪЬЙЗ"
+  mapping = zip ['A'..'Z'] str ++ zip ['a'..'z'] (map toLower str)
+  in map $ \c -> fromMaybe c $ lookup c mapping
+
+-- | Updates and renders a complete state
+draw :: NC.Window -> Phase -> NC.Curses ()
+draw w p = do
+  clear w
+  NC.updateWindow w $ do
+    NC.moveCursor 0 0
+    NC.drawString $ show p
+  NC.render
+
+-- | Updates and renders a complete state,
+-- but can be optimized given the previous state
+drawChange :: NC.Window -> Phase -> Phase -> NC.Curses ()
+drawChange w pold pnew
+  | pold == pnew = return ()
+  | otherwise    = draw w pnew
 
 main :: IO ()
 main = do
@@ -106,32 +143,23 @@ main = do
             loop phase = do
               liftIO $ threadDelay 5000
               (sdl, cur) <- pollAllEvents w
-              let continue phase' = if phase == phase'
-                    then loop phase
-                    else do
-                      (_rows, cols) <- NC.screenSize
-                      NC.updateWindow w $ do
-                        NC.moveCursor 2 0
-                        NC.drawLineH (Just $ NC.Glyph ' ' []) cols
-                        NC.moveCursor 1 0
-                        NC.drawLineH (Just $ NC.Glyph ' ' []) cols
-                        NC.moveCursor 0 0
-                        NC.drawLineH (Just $ NC.Glyph ' ' []) cols
-                        NC.drawString $ show phase'
-                      NC.render
-                      loop phase'
+              let continue phase' = drawChange w phase phase' >> loop phase'
               case phase of
                 Waiting players -> if any (== NC.EventCharacter 'p') cur
                   then continue $ MapYes players
                   else if any (== NC.EventCharacter 'q') cur
                     then return () -- press q to quit
                     else continue phase
-                MapYes players -> case mapMaybe isButtonPress sdl of
-                  (joy, btn) : _ -> continue $ MapNo joy btn players
-                  [] -> continue phase
-                MapNo joy btnYes players -> case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, joy == joy' ] of
-                  btnNo : _ -> continue $ TypeName (Player "" joy btnYes btnNo) players
-                  [] -> continue phase
+                MapYes players -> continue $ case mapMaybe isButtonPress sdl of
+                  (joy, btn) : _ -> MapNo joy btn players
+                  [] -> if any (== NC.EventCharacter 'q') cur
+                    then Waiting players
+                    else phase
+                MapNo joy btnYes players -> continue $ case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, joy == joy' ] of
+                  btnNo : _ -> TypeName (Player "" joy btnYes btnNo) players
+                  [] -> if any (== NC.EventCharacter 'q') cur
+                    then MapYes players
+                    else phase
                 TypeName (Player name joy btnYes btnNo) players -> let
                   chars = [ c | NC.EventCharacter c <- cur ]
                   funs = flip map chars $ \c -> if c == '\DEL'
@@ -146,20 +174,5 @@ main = do
                     else if any (== '\n') chars
                       then continue $ Waiting $ players ++ [newPlayer]
                       else continue $ TypeName newPlayer players
-                    {-
-              if any (== NC.EventCharacter 'q') cur
-                then return () -- press q to quit
-                else case (sdl, cur) of
-                  ([], []) -> loop $ tick + 1
-                  _ -> do
-                    NC.updateWindow w $ do
-                      NC.moveCursor 1 1
-                      NC.drawString $ "Tick " ++ show tick
-                      NC.moveCursor 2 1
-                      NC.drawString $ show sdl
-                      NC.moveCursor 3 1
-                      NC.drawString $ show cur
-                    NC.render
-                    loop $ tick + 1
-                    -}
+        draw w $ Waiting []
         loop $ Waiting []
