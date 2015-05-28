@@ -84,6 +84,7 @@ data Phase
   | MapYes [Player]
   | MapNo SDL.JoystickID Button360 [Player]
   | TypeName Player [Player]
+  | Delete Int [Player]
   deriving (Eq, Ord, Show, Read)
 
 data Player = Player
@@ -114,8 +115,60 @@ draw :: NC.Window -> Phase -> NC.Curses ()
 draw w p = do
   clear w
   NC.updateWindow w $ do
-    NC.moveCursor 0 0
-    NC.drawString $ show p
+    NC.drawBox Nothing Nothing
+    let players = case p of
+          Waiting ps -> ps
+          MapYes ps -> ps
+          MapNo _ _ ps -> ps
+          TypeName _ ps -> ps
+          Delete _ ps -> ps
+        len = length players
+    forM_ (zip [0..] players) $ \(i, player) -> do
+      NC.moveCursor (i + 2) 4
+      NC.drawString $ unwords
+        [ playerName player
+        , "(controller"
+        , show (playerJoystick player) ++ ","
+        , show $ playerYes player
+        , "for yes,"
+        , show $ playerNo player
+        , "for no)"
+        ]
+    NC.moveCursor (fromIntegral $ len + 3) 2
+    case p of
+      Waiting _ -> do
+        NC.drawString $ unwords
+          [ show len
+          , if len == 1 then "inspector" else "inspectors"
+          , "ready."
+          ]
+      MapYes _ -> do
+        NC.drawString "Adding new inspector. Press YES button"
+      MapNo joy yes _ -> do
+        NC.drawString $ unwords
+          [ "Joystick"
+          , show joy ++ ","
+          , "YES is"
+          , show yes ++ ". Press NO button"
+          ]
+      TypeName player _ -> do
+        NC.drawString $ unwords
+          [ "Joystick"
+          , show (playerJoystick player) ++ ","
+          , "YES is"
+          , show (playerYes player) ++ ","
+          , "NO is"
+          , show (playerNo player) ++ "."
+          , "Enter name"
+          ]
+        NC.moveCursor (fromIntegral $ len + 4) 2
+        NC.drawString $ playerName player
+        NC.moveCursor (fromIntegral $ len + 5) 2
+        NC.drawString $ cyrillicize $ playerName player
+      Delete i _ -> do
+        NC.drawString "Remove which inspector from duty?"
+        NC.moveCursor (fromIntegral $ i + 2) 2
+        NC.drawString "*"
   NC.render
 
 -- | Updates and renders a complete state,
@@ -143,13 +196,20 @@ main = do
             loop phase = do
               liftIO $ threadDelay 5000
               (sdl, cur) <- pollAllEvents w
-              let continue phase' = drawChange w phase phase' >> loop phase'
+              let continue phase' = do
+                    if any (== NC.EventResized) cur -- TODO: isn't working
+                      then draw w phase'
+                      else drawChange w phase phase'
+                    loop phase'
               case phase of
-                Waiting players -> if any (== NC.EventCharacter 'p') cur
-                  then continue $ MapYes players
-                  else if any (== NC.EventCharacter 'q') cur
-                    then return () -- press q to quit
-                    else continue phase
+                Waiting players
+                  | any (== NC.EventCharacter 'p') cur
+                    -> continue $ MapYes players
+                  | any (== NC.EventCharacter 'q') cur
+                    -> return () -- press q to quit
+                  | any (== NC.EventCharacter 'd') cur && not (null players)
+                    -> continue $ Delete 0 players
+                  | otherwise -> continue phase
                 MapYes players -> continue $ case mapMaybe isButtonPress sdl of
                   (joy, btn) : _ -> MapNo joy btn players
                   [] -> if any (== NC.EventCharacter 'q') cur
@@ -174,5 +234,16 @@ main = do
                     else if any (== '\n') chars
                       then continue $ Waiting $ players ++ [newPlayer]
                       else continue $ TypeName newPlayer players
+                Delete i players
+                  | any (== NC.EventSpecialKey NC.KeyUpArrow) cur
+                    -> continue $ Delete (max 0 $ i - 1) players
+                  | any (== NC.EventSpecialKey NC.KeyDownArrow) cur
+                    -> continue $ Delete (min (length players - 1) $ i + 1) players
+                  | any (== NC.EventCharacter 'q') cur
+                    -> continue $ Waiting players
+                  | any (== NC.EventCharacter '\n') cur
+                    -> continue $ Waiting $ case splitAt i players of
+                      (xs, ys) -> xs ++ drop 1 ys
+                  | otherwise -> continue phase
         draw w $ Waiting []
         loop $ Waiting []
