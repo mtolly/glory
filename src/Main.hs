@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE RecordWildCards #-}
 module Main where
 
 import Foreign
@@ -80,11 +81,40 @@ isButtonPress = \case
   _ -> Nothing
 
 data Phase
-  = Waiting [Player]
-  | MapYes [Player]
-  | MapNo SDL.JoystickID Button360 [Player]
-  | TypeName Player [Player]
-  | Delete Int [Player]
+  = Waiting
+    { phasePlayers :: [Player]
+    , phaseTasks :: [String]
+    }
+  | MapYes
+    { phasePlayers :: [Player]
+    , phaseTasks :: [String]
+    }
+  | MapNo
+    { phaseJoystick :: SDL.JoystickID
+    , phaseButtonYes :: Button360
+    , phasePlayers :: [Player]
+    , phaseTasks :: [String]
+    }
+  | TypeName
+    { phaseNewPlayer :: Player
+    , phasePlayers :: [Player]
+    , phaseTasks :: [String]
+    }
+  | DeletePlayer
+    { phaseIndex :: Int
+    , phasePlayers :: [Player]
+    , phaseTasks :: [String]
+    }
+  | AddTask
+    { phaseNewTask :: String
+    , phasePlayers :: [Player]
+    , phaseTasks :: [String]
+    }
+  | DeleteTask
+    { phaseIndex :: Int
+    , phasePlayers :: [Player]
+    , phaseTasks :: [String]
+    }
   deriving (Eq, Ord, Show, Read)
 
 data Player = Player
@@ -116,18 +146,13 @@ draw w p = do
   clear w
   NC.updateWindow w $ do
     NC.drawBox Nothing Nothing
-    let players = case p of
-          Waiting ps -> ps
-          MapYes ps -> ps
-          MapNo _ _ ps -> ps
-          TypeName _ ps -> ps
-          Delete _ ps -> ps
+    let players = phasePlayers p
         len = length players
     forM_ (zip [0..] players) $ \(i, player) -> do
       NC.moveCursor (i + 2) 4
       NC.drawString $ unwords
         [ playerName player
-        , "(controller"
+        , "(joystick"
         , show (playerJoystick player) ++ ","
         , show $ playerYes player
         , "for yes,"
@@ -136,39 +161,41 @@ draw w p = do
         ]
     NC.moveCursor (fromIntegral $ len + 3) 2
     case p of
-      Waiting _ -> do
+      Waiting{..} -> do
         NC.drawString $ unwords
           [ show len
           , if len == 1 then "inspector" else "inspectors"
           , "ready."
           ]
-      MapYes _ -> do
+      MapYes{..} -> do
         NC.drawString "Adding new inspector. Press YES button"
-      MapNo joy yes _ -> do
+      MapNo{..} -> do
         NC.drawString $ unwords
           [ "Joystick"
-          , show joy ++ ","
+          , show phaseJoystick ++ ","
           , "YES is"
-          , show yes ++ ". Press NO button"
+          , show phaseButtonYes ++ ". Press NO button"
           ]
-      TypeName player _ -> do
+      TypeName{..} -> do
         NC.drawString $ unwords
           [ "Joystick"
-          , show (playerJoystick player) ++ ","
+          , show (playerJoystick phaseNewPlayer) ++ ","
           , "YES is"
-          , show (playerYes player) ++ ","
+          , show (playerYes phaseNewPlayer) ++ ","
           , "NO is"
-          , show (playerNo player) ++ "."
+          , show (playerNo phaseNewPlayer) ++ "."
           , "Enter name"
           ]
         NC.moveCursor (fromIntegral $ len + 4) 2
-        NC.drawString $ playerName player
+        NC.drawString $ playerName phaseNewPlayer
         NC.moveCursor (fromIntegral $ len + 5) 2
-        NC.drawString $ cyrillicize $ playerName player
-      Delete i _ -> do
+        NC.drawString $ cyrillicize $ playerName phaseNewPlayer
+      DeletePlayer{..} -> do
         NC.drawString "Remove which inspector from duty?"
-        NC.moveCursor (fromIntegral $ i + 2) 2
+        NC.moveCursor (fromIntegral $ phaseIndex + 2) 2
         NC.drawString "*"
+      AddTask{} -> undefined
+      DeleteTask{} -> undefined
   NC.render
 
 -- | Updates and renders a complete state,
@@ -202,48 +229,68 @@ main = do
                       else drawChange w phase phase'
                     loop phase'
               case phase of
-                Waiting players
+                Waiting{..}
                   | any (== NC.EventCharacter 'p') cur
-                    -> continue $ MapYes players
-                  | any (== NC.EventCharacter 'q') cur
-                    -> return () -- press q to quit
-                  | any (== NC.EventCharacter 'd') cur && not (null players)
-                    -> continue $ Delete 0 players
+                    -> continue $ MapYes{..}
+                  | any (== NC.EventCharacter '\ESC') cur
+                    -> return () -- press ESC to quit
+                  | any (== NC.EventCharacter '\DEL') cur && not (null phasePlayers)
+                    -> continue $ DeletePlayer{phaseIndex = 0, ..}
                   | otherwise -> continue phase
-                MapYes players -> continue $ case mapMaybe isButtonPress sdl of
-                  (joy, btn) : _ -> MapNo joy btn players
+                MapYes{..} -> continue $ case mapMaybe isButtonPress sdl of
+                  (phaseJoystick, phaseButtonYes) : _ -> MapNo{..}
                   [] -> if any (== NC.EventCharacter 'q') cur
-                    then Waiting players
+                    then Waiting{..}
                     else phase
-                MapNo joy btnYes players -> continue $ case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, joy == joy' ] of
-                  btnNo : _ -> TypeName (Player "" joy btnYes btnNo) players
+                MapNo{..} -> continue $ case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, phaseJoystick == joy' ] of
+                  buttonNo : _ -> TypeName
+                    { phaseNewPlayer = Player
+                      { playerName = ""
+                      , playerJoystick = phaseJoystick
+                      , playerYes = phaseButtonYes
+                      , playerNo = buttonNo
+                      }
+                    , ..
+                    }
                   [] -> if any (== NC.EventCharacter 'q') cur
-                    then MapYes players
+                    then MapYes{..}
                     else phase
-                TypeName (Player name joy btnYes btnNo) players -> let
+                TypeName{..} -> let
                   chars = [ c | NC.EventCharacter c <- cur ]
                   funs = flip map chars $ \c -> if c == '\DEL'
                     then \s -> take (length s - 1) s
                     else if c == '\n'
                       then id
                       else (++ [c])
-                  name' = take 20 $ foldl (flip ($)) name funs
-                  newPlayer = Player name' joy btnYes btnNo
+                  name' = take 20 $ foldl (flip ($)) (playerName phaseNewPlayer) funs
+                  updatedPlayer = phaseNewPlayer{ playerName = name' }
                   in if null chars
                     then continue phase
                     else if any (== '\n') chars
-                      then continue $ Waiting $ players ++ [newPlayer]
-                      else continue $ TypeName newPlayer players
-                Delete i players
+                      then continue $ Waiting{phasePlayers = phasePlayers ++ [updatedPlayer], ..}
+                      else continue $ TypeName{phaseNewPlayer = updatedPlayer, ..}
+                DeletePlayer{..}
                   | any (== NC.EventSpecialKey NC.KeyUpArrow) cur
-                    -> continue $ Delete (max 0 $ i - 1) players
+                    -> continue $ DeletePlayer
+                      { phaseIndex = max 0 $ phaseIndex - 1
+                      , ..
+                      }
                   | any (== NC.EventSpecialKey NC.KeyDownArrow) cur
-                    -> continue $ Delete (min (length players - 1) $ i + 1) players
+                    -> continue $ DeletePlayer
+                      { phaseIndex = min (length phasePlayers - 1) $ phaseIndex + 1
+                      , ..
+                      }
                   | any (== NC.EventCharacter 'q') cur
-                    -> continue $ Waiting players
+                    -> continue $ Waiting{..}
                   | any (== NC.EventCharacter '\n') cur
-                    -> continue $ Waiting $ case splitAt i players of
-                      (xs, ys) -> xs ++ drop 1 ys
+                    -> continue $ Waiting
+                      { phasePlayers = case splitAt phaseIndex phasePlayers of
+                        (xs, ys) -> xs ++ drop 1 ys
+                      , ..
+                      }
                   | otherwise -> continue phase
-        draw w $ Waiting []
-        loop $ Waiting []
+                AddTask{} -> undefined
+                DeleteTask{} -> undefined
+        let startState = Waiting{ phasePlayers = [], phaseTasks = [] }
+        draw w startState
+        loop startState
