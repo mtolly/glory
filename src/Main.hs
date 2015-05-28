@@ -10,6 +10,8 @@ import Control.Concurrent (threadDelay)
 import Control.Monad
 import qualified UI.NCurses as NC
 import Control.Monad.IO.Class
+import Data.Maybe (mapMaybe)
+import System.IO (hIsTerminalDevice, stdout)
 
 -- | Returns Just an event if there is one currently in the queue.
 pollSDL :: (MonadIO m) => m (Maybe SDL.Event)
@@ -44,48 +46,120 @@ withSDL flags = bracket_
   (code 0 $ SDL.init $ foldr (.|.) 0 flags)
   SDL.quit
 
-{-
-360 buttons:
-0 -> "A"
-1 -> "B"
-2 -> "X"
-3 -> "Y"
-4 -> "LB"
-5 -> "RB"
-6 -> "Left Click"
-7 -> "Right Click"
-8 -> "Start"
-9 -> "Back"
-10 -> "Xbox"
-11 -> "D-pad Up"
-12 -> "D-pad Down"
-13 -> "D-pad Left"
-14 -> "D-pad Right"
--}
+data Button360
+  -- buttons, from 0 to 14
+  = A
+  | B
+  | X
+  | Y
+  | LB
+  | RB
+  | LClick
+  | RClick
+  | Start
+  | Back
+  | Xbox
+  | DpadUp
+  | DpadDown
+  | DpadLeft
+  | DpadRight
+  -- axes
+  | LT
+  | RT
+  -- TODO: sticks
+  deriving (Eq, Ord, Show, Read, Enum, Bounded)
+
+isButtonPress :: SDL.Event -> Maybe (SDL.JoystickID, Button360)
+isButtonPress = \case
+  SDL.JoyButtonEvent
+    { SDL.joyButtonEventButton = button
+    , SDL.joyButtonEventState = SDL.SDL_PRESSED
+    , SDL.joyButtonEventWhich = joystick
+    } -> Just (joystick, toEnum $ fromIntegral button)
+  _ -> Nothing
+
+data Phase
+  = Waiting [Player]
+  | MapYes [Player]
+  | MapNo SDL.JoystickID Button360 [Player]
+  | TypeName Player [Player]
+  deriving (Eq, Ord, Show, Read)
+
+data Player = Player String SDL.JoystickID Button360 Button360
+  deriving (Eq, Ord, Show, Read)
 
 main :: IO ()
-main = withSDL [SDL.SDL_INIT_TIMER, SDL.SDL_INIT_JOYSTICK, SDL.SDL_INIT_HAPTIC, SDL.SDL_INIT_EVENTS] $ do
-  NC.runCurses $ do
-    w <- NC.defaultWindow
-    _ <- NC.setCursorMode NC.CursorInvisible
-    NC.setEcho False
-    njoy <- SDL.numJoysticks
-    _joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
-    nhap <- SDL.numHaptics
-    _haps <- forM [0 .. nhap - 1] $ notNull . SDL.hapticOpen
-    NC.updateWindow w $ NC.drawBox (Just NC.glyphLineV) (Just NC.glyphLineH)
-    NC.render
-    let loop tick = do
-          liftIO $ threadDelay 5000
-          evts <- pollAllEvents w
-          case evts of
-            ([], []) -> loop $ tick + 1
-            _ -> do
-              NC.updateWindow w $ do
-                NC.moveCursor 1 1
-                NC.drawString $ "Tick " ++ show tick
-                NC.moveCursor 2 1
-                NC.drawString $ show evts
-              NC.render
-              loop $ tick + 1
-    loop (0 :: Integer)
+main = do
+  b <- hIsTerminalDevice stdout
+  if not b
+    then error "Try again comrade. TTY is required"
+    else withSDL [SDL.SDL_INIT_TIMER, SDL.SDL_INIT_JOYSTICK, SDL.SDL_INIT_HAPTIC, SDL.SDL_INIT_EVENTS] $ do
+      NC.runCurses $ do
+        w <- NC.defaultWindow
+        _ <- NC.setCursorMode NC.CursorInvisible
+        NC.setEcho False
+        njoy <- SDL.numJoysticks
+        _joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
+        nhap <- SDL.numHaptics
+        _haps <- forM [0 .. nhap - 1] $ notNull . SDL.hapticOpen
+        let loop :: Phase -> NC.Curses ()
+            loop phase = do
+              liftIO $ threadDelay 5000
+              (sdl, cur) <- pollAllEvents w
+              let continue phase' = if phase == phase'
+                    then loop phase
+                    else do
+                      (_rows, cols) <- NC.screenSize
+                      NC.updateWindow w $ do
+                        NC.moveCursor 2 0
+                        NC.drawLineH (Just $ NC.Glyph ' ' []) cols
+                        NC.moveCursor 1 0
+                        NC.drawLineH (Just $ NC.Glyph ' ' []) cols
+                        NC.moveCursor 0 0
+                        NC.drawLineH (Just $ NC.Glyph ' ' []) cols
+                        NC.drawString $ show phase'
+                      NC.render
+                      loop phase'
+              case phase of
+                Waiting players -> if any (== NC.EventCharacter 'p') cur
+                  then continue $ MapYes players
+                  else if any (== NC.EventCharacter 'q') cur
+                    then return () -- press q to quit
+                    else continue phase
+                MapYes players -> case mapMaybe isButtonPress sdl of
+                  (joy, btn) : _ -> continue $ MapNo joy btn players
+                  [] -> continue phase
+                MapNo joy btnYes players -> case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, joy == joy' ] of
+                  btnNo : _ -> continue $ TypeName (Player "" joy btnYes btnNo) players
+                  [] -> continue phase
+                TypeName (Player name joy btnYes btnNo) players -> let
+                  chars = [ c | NC.EventCharacter c <- cur ]
+                  funs = flip map chars $ \c -> if c == '\DEL'
+                    then \s -> take (length s - 1) s
+                    else if c == '\n'
+                      then id
+                      else (++ [c])
+                  name' = take 20 $ foldl (flip ($)) name funs
+                  newPlayer = Player name' joy btnYes btnNo
+                  in if null chars
+                    then continue phase
+                    else if any (== '\n') chars
+                      then continue $ Waiting $ players ++ [newPlayer]
+                      else continue $ TypeName newPlayer players
+                    {-
+              if any (== NC.EventCharacter 'q') cur
+                then return () -- press q to quit
+                else case (sdl, cur) of
+                  ([], []) -> loop $ tick + 1
+                  _ -> do
+                    NC.updateWindow w $ do
+                      NC.moveCursor 1 1
+                      NC.drawString $ "Tick " ++ show tick
+                      NC.moveCursor 2 1
+                      NC.drawString $ show sdl
+                      NC.moveCursor 3 1
+                      NC.drawString $ show cur
+                    NC.render
+                    loop $ tick + 1
+                    -}
+        loop $ Waiting []
