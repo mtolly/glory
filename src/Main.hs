@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 module Main where
 
 import Foreign
@@ -14,6 +15,9 @@ import Control.Monad.IO.Class
 import Data.Maybe (mapMaybe, fromMaybe)
 import System.IO (hIsTerminalDevice, stdout)
 import Data.Char (toLower)
+
+import qualified Text.PrettyPrint.Boxes as Box
+import Text.PrettyPrint.Boxes (Box, (<>), (<+>), (//), (/+/))
 
 -- | Returns Just an event if there is one currently in the queue.
 pollSDL :: (MonadIO m) => m (Maybe SDL.Event)
@@ -83,37 +87,37 @@ isButtonPress = \case
 data Phase
   = Waiting
     { phasePlayers :: [Player]
-    , phaseTasks :: [String]
+    , phaseTasks :: [(Task, [Int])]
     }
-  | MapYes
+  | AddPlayerYes
     { phasePlayers :: [Player]
-    , phaseTasks :: [String]
+    , phaseTasks :: [(Task, [Int])]
     }
-  | MapNo
+  | AddPlayerNo
     { phaseJoystick :: SDL.JoystickID
     , phaseButtonYes :: Button360
     , phasePlayers :: [Player]
-    , phaseTasks :: [String]
+    , phaseTasks :: [(Task, [Int])]
     }
-  | TypeName
+  | AddPlayerName
     { phaseNewPlayer :: Player
     , phasePlayers :: [Player]
-    , phaseTasks :: [String]
+    , phaseTasks :: [(Task, [Int])]
     }
   | DeletePlayer
     { phaseIndex :: Int
     , phasePlayers :: [Player]
-    , phaseTasks :: [String]
+    , phaseTasks :: [(Task, [Int])]
     }
   | AddTask
-    { phaseNewTask :: String
+    { phaseNewTask :: Task
     , phasePlayers :: [Player]
-    , phaseTasks :: [String]
+    , phaseTasks :: [(Task, [Int])]
     }
   | DeleteTask
     { phaseIndex :: Int
     , phasePlayers :: [Player]
-    , phaseTasks :: [String]
+    , phaseTasks :: [(Task, [Int])]
     }
   deriving (Eq, Ord, Show, Read)
 
@@ -123,6 +127,8 @@ data Player = Player
   , playerYes :: Button360
   , playerNo :: Button360
   } deriving (Eq, Ord, Show, Read)
+
+type Task = String
 
 -- | Updates but does not render
 clear :: NC.Window -> NC.Curses ()
@@ -140,60 +146,85 @@ cyrillicize = let
   mapping = zip ['A'..'Z'] str ++ zip ['a'..'z'] (map toLower str)
   in map $ \c -> fromMaybe c $ lookup c mapping
 
+getPlayersTasks :: Phase -> [(Player, [Task])]
+getPlayersTasks p = do
+  (ix, player) <- zip [0..] $ phasePlayers p
+  let tasks = [ task | (task, ixs) <- phaseTasks p, elem ix ixs ]
+  return (player, tasks)
+
+playerBox :: [(Bool, (Player, [Task]))] -> Box
+playerBox players = Box.vcat Box.left $ do
+  (star, (Player{..}, tasks)) <- players
+  let playerLine = Box.text $ unwords
+        [ playerName
+        , "(joystick"
+        , show playerJoystick ++ ","
+        , show playerYes
+        , "for yes,"
+        , show playerNo
+        , "for no)"
+        ]
+      playerTasks = Box.vcat Box.left $ playerLine : do
+        task <- tasks
+        return $ Box.emptyBox 0 2 <> Box.text task
+      starColumn = Box.text $ if star then "* " else "  "
+  return $ starColumn <> playerTasks
+
+pasteBox :: Box -> Integer -> Integer -> NC.Update ()
+pasteBox box row col = forM_ (zip [row ..] $ lines $ Box.render box) $ \(r, ln) -> do
+  NC.moveCursor r col
+  NC.drawString ln
+
 -- | Updates and renders a complete state
 draw :: NC.Window -> Phase -> NC.Curses ()
 draw w p = do
   clear w
   NC.updateWindow w $ do
     NC.drawBox Nothing Nothing
-    let players = phasePlayers p
-        len = length players
-    forM_ (zip [0..] players) $ \(i, player) -> do
-      NC.moveCursor (i + 2) 4
-      NC.drawString $ unwords
-        [ playerName player
-        , "(joystick"
-        , show (playerJoystick player) ++ ","
-        , show $ playerYes player
-        , "for yes,"
-        , show $ playerNo player
-        , "for no)"
-        ]
-    NC.moveCursor (fromIntegral $ len + 3) 2
+    let playersTasks = getPlayersTasks p
     case p of
       Waiting{..} -> do
-        NC.drawString $ unwords
-          [ show len
-          , if len == 1 then "inspector" else "inspectors"
-          , "ready."
-          ]
-      MapYes{..} -> do
-        NC.drawString "Adding new inspector. Press YES button"
-      MapNo{..} -> do
-        NC.drawString $ unwords
-          [ "Joystick"
-          , show phaseJoystick ++ ","
-          , "YES is"
-          , show phaseButtonYes ++ ". Press NO button"
-          ]
-      TypeName{..} -> do
-        NC.drawString $ unwords
-          [ "Joystick"
-          , show (playerJoystick phaseNewPlayer) ++ ","
-          , "YES is"
-          , show (playerYes phaseNewPlayer) ++ ","
-          , "NO is"
-          , show (playerNo phaseNewPlayer) ++ "."
-          , "Enter name"
-          ]
-        NC.moveCursor (fromIntegral $ len + 4) 2
-        NC.drawString $ playerName phaseNewPlayer
-        NC.moveCursor (fromIntegral $ len + 5) 2
-        NC.drawString $ cyrillicize $ playerName phaseNewPlayer
+        let box = playerBox $ map (False,) playersTasks
+            len = length $ phasePlayers
+            instructions = Box.text $ unwords
+              [ show len
+              , if len == 1 then "inspector" else "inspectors"
+              , "ready."
+              ]
+        pasteBox (box /+/ instructions) 2 2
+      AddPlayerYes{..} -> do
+        let box = playerBox $ map (False,) playersTasks
+            instructions = Box.text "Adding new inspector. Press YES button"
+        pasteBox (box /+/ instructions) 2 2
+      AddPlayerNo{..} -> do
+        let box = playerBox $ map (False,) playersTasks
+            instructions = Box.text $ unwords
+              [ "Joystick"
+              , show phaseJoystick ++ ","
+              , "YES is"
+              , show phaseButtonYes ++ ". Press NO button"
+              ]
+        pasteBox (box /+/ instructions) 2 2
+      AddPlayerName{..} -> do
+        let box = playerBox $ map (False,) playersTasks
+            instructions = Box.text $ unwords
+              [ "Joystick"
+              , show (playerJoystick phaseNewPlayer) ++ ","
+              , "YES is"
+              , show (playerYes phaseNewPlayer) ++ ","
+              , "NO is"
+              , show (playerNo phaseNewPlayer) ++ "."
+              , "Enter name"
+              ]
+            eng = Box.text $ playerName phaseNewPlayer
+            rus = Box.text $ cyrillicize $ playerName phaseNewPlayer
+        pasteBox (box /+/ instructions // eng // rus) 2 2
       DeletePlayer{..} -> do
-        NC.drawString "Remove which inspector from duty?"
-        NC.moveCursor (fromIntegral $ phaseIndex + 2) 2
-        NC.drawString "*"
+        let box = playerBox $ do
+              (i, pt) <- zip [0..] playersTasks
+              return (i == phaseIndex, pt)
+            instructions = Box.text "Remove which inspector from duty?"
+        pasteBox (box /+/ instructions) 2 2
       AddTask{} -> undefined
       DeleteTask{} -> undefined
   NC.render
@@ -224,38 +255,34 @@ main = do
               liftIO $ threadDelay 5000
               (sdl, cur) <- pollAllEvents w
               let continue phase' = do
-                    if any (== NC.EventResized) cur -- TODO: isn't working
+                    if elem NC.EventResized cur -- TODO: isn't working
                       then draw w phase'
                       else drawChange w phase phase'
                     loop phase'
+                  pressedChar c = elem (NC.EventCharacter c) cur
+                  pressedKey k = elem (NC.EventSpecialKey k) cur
               case phase of
                 Waiting{..}
-                  | any (== NC.EventCharacter 'p') cur
-                    -> continue $ MapYes{..}
-                  | any (== NC.EventCharacter '\ESC') cur
-                    -> return () -- press ESC to quit
-                  | any (== NC.EventCharacter '\DEL') cur && not (null phasePlayers)
+                  | pressedChar 'p' -> continue $ AddPlayerYes{..}
+                  | pressedChar '\ESC' -> return () -- press ESC to quit
+                  | (pressedChar '\DEL' || pressedKey NC.KeyDeleteCharacter) && not (null phasePlayers)
                     -> continue $ DeletePlayer{phaseIndex = 0, ..}
                   | otherwise -> continue phase
-                MapYes{..} -> continue $ case mapMaybe isButtonPress sdl of
-                  (phaseJoystick, phaseButtonYes) : _ -> MapNo{..}
-                  [] -> if any (== NC.EventCharacter 'q') cur
-                    then Waiting{..}
-                    else phase
-                MapNo{..} -> continue $ case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, phaseJoystick == joy' ] of
-                  buttonNo : _ -> TypeName
+                AddPlayerYes{..} -> continue $ case mapMaybe isButtonPress sdl of
+                  (phaseJoystick, phaseButtonYes) : _ -> AddPlayerNo{..}
+                  [] -> if pressedChar 'q' then Waiting{..} else phase
+                AddPlayerNo{..} -> continue $ case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, phaseJoystick == joy' ] of
+                  buttonNo : _ -> AddPlayerName
                     { phaseNewPlayer = Player
-                      { playerName = ""
+                      { playerName     = ""
                       , playerJoystick = phaseJoystick
-                      , playerYes = phaseButtonYes
-                      , playerNo = buttonNo
+                      , playerYes      = phaseButtonYes
+                      , playerNo       = buttonNo
                       }
                     , ..
                     }
-                  [] -> if any (== NC.EventCharacter 'q') cur
-                    then MapYes{..}
-                    else phase
-                TypeName{..} -> let
+                  [] -> if pressedChar 'q' then AddPlayerYes{..} else phase
+                AddPlayerName{..} -> let
                   chars = [ c | NC.EventCharacter c <- cur ]
                   funs = flip map chars $ \c -> if c == '\DEL'
                     then \s -> take (length s - 1) s
@@ -266,28 +293,24 @@ main = do
                   updatedPlayer = phaseNewPlayer{ playerName = name' }
                   in if null chars
                     then continue phase
-                    else if any (== '\n') chars
+                    else if elem '\n' chars
                       then continue $ Waiting{phasePlayers = phasePlayers ++ [updatedPlayer], ..}
-                      else continue $ TypeName{phaseNewPlayer = updatedPlayer, ..}
+                      else continue $ AddPlayerName{phaseNewPlayer = updatedPlayer, ..}
                 DeletePlayer{..}
-                  | any (== NC.EventSpecialKey NC.KeyUpArrow) cur
-                    -> continue $ DeletePlayer
-                      { phaseIndex = max 0 $ phaseIndex - 1
-                      , ..
-                      }
-                  | any (== NC.EventSpecialKey NC.KeyDownArrow) cur
-                    -> continue $ DeletePlayer
-                      { phaseIndex = min (length phasePlayers - 1) $ phaseIndex + 1
-                      , ..
-                      }
-                  | any (== NC.EventCharacter 'q') cur
-                    -> continue $ Waiting{..}
-                  | any (== NC.EventCharacter '\n') cur
-                    -> continue $ Waiting
-                      { phasePlayers = case splitAt phaseIndex phasePlayers of
-                        (xs, ys) -> xs ++ drop 1 ys
-                      , ..
-                      }
+                  | pressedKey NC.KeyUpArrow -> continue $ DeletePlayer
+                    { phaseIndex = max 0 $ phaseIndex - 1
+                    , ..
+                    }
+                  | pressedKey NC.KeyDownArrow -> continue $ DeletePlayer
+                    { phaseIndex = min (length phasePlayers - 1) $ phaseIndex + 1
+                    , ..
+                    }
+                  | pressedChar 'q' -> continue $ Waiting{..}
+                  | pressedChar '\n' -> continue $ Waiting
+                    { phasePlayers = case splitAt phaseIndex phasePlayers of
+                      (xs, ys) -> xs ++ drop 1 ys
+                    , ..
+                    }
                   | otherwise -> continue phase
                 AddTask{} -> undefined
                 DeleteTask{} -> undefined
