@@ -3,22 +3,45 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
-module Main where
+module Main (main) where
 
 import Foreign
 import Foreign.C
 import qualified Graphics.UI.SDL as SDL
 import Control.Exception (bracket_)
-import Control.Concurrent (threadDelay)
+import Control.Concurrent (threadDelay, forkIO)
+import Control.Concurrent.MVar
 import Control.Monad
-import qualified UI.NCurses as NC
 import Control.Monad.IO.Class
-import Data.Maybe (mapMaybe, fromMaybe)
+import Data.Maybe
 import System.IO (hIsTerminalDevice, stdout)
 import Data.Char (toLower)
+import qualified Data.Set as Set
+import qualified Graphics.Vty as Vty
 
-import qualified Text.PrettyPrint.Boxes as Box
-import Text.PrettyPrint.Boxes (Box, (<>), (<+>), (//), (/+/))
+data Button360
+  -- buttons, from 0 to 14
+  = A
+  | B
+  | X
+  | Y
+  | LB
+  | RB
+  | LClick
+  | RClick
+  | Start
+  | Back
+  | Xbox
+  | Dpad Ortho -- UDLR are 11,12,13,14
+  -- axes
+  | LTrigger -- axis 2. minBound=normal, maxBound=pressed
+  | RTrigger -- axis 5. minBound=normal, maxBound=pressed
+  | LStick Ortho -- X is axis 0, Y is 1. minBound is U/L, maxBound is D/R
+  | RStick Ortho -- X is axis 3, Y is 4. minBound is U/L, maxBound is D/R
+  deriving (Eq, Ord, Show, Read)
+
+data Ortho = U | D | L | R
+  deriving (Eq, Ord, Show, Read, Enum, Bounded)
 
 -- | Returns Just an event if there is one currently in the queue.
 pollSDL :: (MonadIO m) => m (Maybe SDL.Event)
@@ -26,13 +49,61 @@ pollSDL = liftIO $ alloca $ \pevt -> SDL.pollEvent pevt >>= \case
   1 -> fmap Just $ peek pevt
   _ -> return Nothing
 
-untilNothing :: (Monad m) => m (Maybe a) -> m [a]
-untilNothing act = act >>= \case
-  Just x  -> liftM (x :) $ untilNothing act
-  Nothing -> return []
-
-pollAllEvents :: NC.Window -> NC.Curses ([SDL.Event], [NC.Event])
-pollAllEvents w = liftM2 (,) (untilNothing pollSDL) (untilNothing $ NC.getEvent w $ Just 0)
+modifyButtons :: SDL.Event -> [Set.Set Button360] -> [Set.Set Button360]
+modifyButtons = \case
+  SDL.JoyButtonEvent
+    { SDL.joyButtonEventButton = btn
+    , SDL.joyButtonEventState = SDL.SDL_PRESSED
+    , SDL.joyButtonEventWhich = joy
+    } -> button joy btn True
+  SDL.JoyButtonEvent
+    { SDL.joyButtonEventButton = btn
+    , SDL.joyButtonEventState = SDL.SDL_RELEASED
+    , SDL.joyButtonEventWhich = joy
+    } -> button joy btn False
+  SDL.JoyAxisEvent
+    { SDL.joyAxisEventAxis = n
+    , SDL.joyAxisEventValue = v
+    , SDL.joyAxisEventWhich = joy
+    } -> axis joy n v
+  _ -> id
+  where
+    button joy btn bool = modify (fromIntegral joy) $ case btn of
+      0  -> modifier A
+      1  -> modifier B
+      2  -> modifier X
+      3  -> modifier Y
+      4  -> modifier LB
+      5  -> modifier RB
+      6  -> modifier LClick
+      7  -> modifier RClick
+      8  -> modifier Start
+      9  -> modifier Back
+      10 -> modifier Xbox
+      11 -> modifier $ Dpad U
+      12 -> modifier $ Dpad D
+      13 -> modifier $ Dpad L
+      14 -> modifier $ Dpad R
+      _ -> id
+      where modifier = if bool then Set.insert else Set.delete
+    axis joy n v = modify (fromIntegral joy) $ case n of
+      0 -> stick LStick L R
+      1 -> stick LStick U D
+      2 -> trigger LTrigger
+      3 -> stick RStick L R
+      4 -> stick RStick U D
+      5 -> trigger RTrigger
+      _ -> id
+      where stick s dmin dmax = if
+              | v < (-0x4000) -> Set.insert (s dmin) . Set.delete (s dmax)
+              | v > 0x4000    -> Set.delete (s dmin) . Set.insert (s dmax)
+              | otherwise     -> Set.delete (s dmin) . Set.delete (s dmax)
+            trigger t = if
+              | v > 0     -> Set.insert t
+              | otherwise -> Set.delete t
+    modify i f xs = case splitAt i xs of
+      (_ , []    ) -> xs
+      (ys, z : zs) -> ys ++ [f z] ++ zs
 
 -- | Extracts and throws an SDL error if the action returns a null pointer.
 notNull :: (MonadIO m) => m (Ptr a) -> m (Ptr a)
@@ -52,38 +123,6 @@ withSDL :: [SDL.InitFlag] -> IO a -> IO a
 withSDL flags = bracket_
   (code 0 $ SDL.init $ foldr (.|.) 0 flags)
   SDL.quit
-
-data Button360
-  -- buttons, from 0 to 14
-  = A
-  | B
-  | X
-  | Y
-  | LB
-  | RB
-  | LClick
-  | RClick
-  | Start
-  | Back
-  | Xbox
-  | DpadUp
-  | DpadDown
-  | DpadLeft
-  | DpadRight
-  -- axes
-  | LT
-  | RT
-  -- TODO: sticks
-  deriving (Eq, Ord, Show, Read, Enum, Bounded)
-
-isButtonPress :: SDL.Event -> Maybe (SDL.JoystickID, Button360)
-isButtonPress = \case
-  SDL.JoyButtonEvent
-    { SDL.joyButtonEventButton = button
-    , SDL.joyButtonEventState = SDL.SDL_PRESSED
-    , SDL.joyButtonEventWhich = joystick
-    } -> Just (joystick, toEnum $ fromIntegral button)
-  _ -> Nothing
 
 data Phase
   = Waiting
@@ -131,15 +170,6 @@ data Player = Player
 
 type Task = String
 
--- | Updates but does not render
-clear :: NC.Window -> NC.Curses ()
-clear w = do
-  (rows, cols) <- NC.screenSize
-  NC.updateWindow w $ do
-    forM_ [0 .. rows - 1] $ \r -> do
-      NC.moveCursor r 0
-      NC.drawLineH (Just $ NC.Glyph ' ' []) cols
-
 -- | not srs, just for funsies
 cyrillicize :: String -> String
 cyrillicize = let
@@ -153,102 +183,22 @@ getPlayersTasks p = do
   let tasks = [ task | (task, ixs) <- phaseTasks p, elem ix ixs ]
   return (player, tasks)
 
-playerBox :: [(Bool, (Player, [Task]))] -> Box
-playerBox players = Box.vcat Box.left $ do
-  (star, (Player{..}, tasks)) <- players
-  let playerLine = Box.text $ unwords
-        [ playerName
-        , "(joystick"
-        , show playerJoystick ++ ","
-        , show playerYes
-        , "for yes,"
-        , show playerNo
-        , "for no)"
-        ]
-      playerTasks = Box.vcat Box.left $ playerLine : do
-        task <- tasks
-        return $ Box.emptyBox 0 2 <> Box.text task
-      starColumn = Box.text $ if star then "* " else "  "
-  return $ starColumn <> playerTasks
+newPresses :: [Set.Set Button360] -> [Set.Set Button360] -> [(SDL.JoystickID, Button360)]
+newPresses prev curr = concat $ zipWith3 f [0..] prev curr where
+  f i set1 set2 = map (i,) $ Set.toList $ Set.difference set2 set1
 
-pasteBox :: Box -> Integer -> Integer -> NC.Update ()
-pasteBox box row col = forM_ (zip [row ..] $ lines $ Box.render box) $ \(r, ln) -> do
-  NC.moveCursor r col
-  NC.drawString ln
-
--- | Updates and renders a complete state
-draw :: NC.Window -> Phase -> NC.Curses ()
-draw w p = do
-  clear w
-  NC.updateWindow w $ do
-    NC.drawBox Nothing Nothing
-    let playersTasks = getPlayersTasks p
-    case p of
-      Waiting{..} -> do
-        let box = playerBox $ map (False,) playersTasks
-            len = length $ phasePlayers
-            instructions = Box.text $ unwords
-              [ show len
-              , if len == 1 then "inspector" else "inspectors"
-              , "ready."
-              ]
-        pasteBox (box /+/ instructions) 2 2
-      AddPlayerYes{..} -> do
-        let box = playerBox $ map (False,) playersTasks
-            instructions = Box.text "Adding new inspector. Press YES button"
-        pasteBox (box /+/ instructions) 2 2
-      AddPlayerNo{..} -> do
-        let box = playerBox $ map (False,) playersTasks
-            instructions = Box.text $ unwords
-              [ "Joystick"
-              , show phaseJoystick ++ ","
-              , "YES is"
-              , show phaseButtonYes ++ ". Press NO button"
-              ]
-        pasteBox (box /+/ instructions) 2 2
-      AddPlayerName{..} -> do
-        let box = playerBox $ map (False,) playersTasks
-            instructions = Box.text $ unwords
-              [ "Joystick"
-              , show (playerJoystick phaseNewPlayer) ++ ","
-              , "YES is"
-              , show (playerYes phaseNewPlayer) ++ ","
-              , "NO is"
-              , show (playerNo phaseNewPlayer) ++ "."
-              , "Enter name"
-              ]
-            eng = Box.text $ playerName phaseNewPlayer
-            rus = Box.text $ cyrillicize $ playerName phaseNewPlayer
-        pasteBox (box /+/ instructions // eng // rus) 2 2
-      DeletePlayer{..} -> do
-        let box = playerBox $ do
-              (i, pt) <- zip [0..] playersTasks
-              return (i == phaseIndex, pt)
-            instructions = Box.text "Remove which inspector from duty?"
-        pasteBox (box /+/ instructions) 2 2
-      AddTask{} -> undefined
-      DeleteTask{} -> undefined
-  NC.render
-
--- | Updates and renders a complete state,
--- but can be optimized given the previous state
-drawChange :: NC.Window -> Phase -> Phase -> NC.Curses ()
-drawChange w pold pnew
-  | pold == pnew = return ()
-  | otherwise    = draw w pnew
-
-update :: [SDL.Event] -> [NC.Event] -> Phase -> Maybe Phase
-update sdl cur phase = case phase of
+update :: [(SDL.JoystickID, Button360)] -> [Vty.Key] -> Phase -> Maybe Phase
+update sdl keys phase = case phase of
   Waiting{..}
     | pressedChar 'p' -> Just $ AddPlayerYes{..}
-    | pressedChar '\ESC' -> Nothing
-    | (pressedChar '\DEL' || pressedKey NC.KeyDeleteCharacter) && not (null phasePlayers)
+    | pressedKey Vty.KEsc -> Nothing
+    | pressedKey Vty.KDel && not (null phasePlayers)
       -> Just $ DeletePlayer{phaseIndex = 0, ..}
     | otherwise -> Just phase
-  AddPlayerYes{..} -> Just $ case mapMaybe isButtonPress sdl of
+  AddPlayerYes{..} -> Just $ case sdl of
     (phaseJoystick, phaseButtonYes) : _ -> AddPlayerNo{..}
     [] -> if pressedChar 'q' then Waiting{..} else phase
-  AddPlayerNo{..} -> Just $ case [ btnNo | (joy', btnNo) <- mapMaybe isButtonPress sdl, phaseJoystick == joy' ] of
+  AddPlayerNo{..} -> Just $ case [ btnNo | (joy', btnNo) <- sdl, phaseJoystick == joy' ] of
     buttonNo : _ -> AddPlayerName
       { phaseNewPlayer = Player
         { playerName     = ""
@@ -260,30 +210,38 @@ update sdl cur phase = case phase of
       }
     [] -> if pressedChar 'q' then AddPlayerYes{..} else phase
   AddPlayerName{..} -> Just $ let
-    chars = [ c | NC.EventCharacter c <- cur ]
-    funs = flip map chars $ \c -> if c == '\DEL'
-      then \s -> take (length s - 1) s
-      else if c == '\n'
-        then id
-        else (++ [c])
+    funs = flip map keys $ \case
+      Vty.KBS     -> \s -> take (length s - 1) s
+      Vty.KChar c -> (++ [c])
+      _           -> id
     name' = take 20 $ foldl (flip ($)) (playerName phaseNewPlayer) funs
     updatedPlayer = phaseNewPlayer{ playerName = name' }
-    in if null chars
-      then phase
-      else if elem '\n' chars
-        then Waiting{phasePlayers = phasePlayers ++ [updatedPlayer], ..}
-        else AddPlayerName{phaseNewPlayer = updatedPlayer, ..}
+    in if
+      | null keys             -> phase
+      | pressedKey Vty.KEnter -> Waiting
+        { phasePlayers = phasePlayers ++ [updatedPlayer]
+        , ..
+        }
+      | pressedChar 'q' -> AddPlayerNo
+        { phaseJoystick = playerJoystick phaseNewPlayer
+        , phaseButtonYes = playerYes phaseNewPlayer
+        , ..
+        }
+      | otherwise             -> AddPlayerName
+        { phaseNewPlayer = updatedPlayer
+        , ..
+        }
   DeletePlayer{..} -> Just $ if
-    | pressedKey NC.KeyUpArrow -> DeletePlayer
+    | pressedKey Vty.KUp -> DeletePlayer
       { phaseIndex = max 0 $ phaseIndex - 1
       , ..
       }
-    | pressedKey NC.KeyDownArrow -> DeletePlayer
+    | pressedKey Vty.KDown -> DeletePlayer
       { phaseIndex = min (length phasePlayers - 1) $ phaseIndex + 1
       , ..
       }
     | pressedChar 'q' -> Waiting{..}
-    | pressedChar '\n' -> Waiting
+    | pressedKey Vty.KEnter -> Waiting
       { phasePlayers = case splitAt phaseIndex phasePlayers of
         (xs, ys) -> xs ++ drop 1 ys
       , ..
@@ -291,34 +249,38 @@ update sdl cur phase = case phase of
     | otherwise -> phase
   AddTask{} -> undefined
   DeleteTask{} -> undefined
-  where pressedChar c = elem (NC.EventCharacter c) cur
-        pressedKey k = elem (NC.EventSpecialKey k) cur
+  where pressedChar c = elem (Vty.KChar c) keys
+        pressedKey k = elem k keys
+
+untilNothing :: (Monad m) => m (Maybe a) -> m [a]
+untilNothing act = act >>= \case
+  Just x  -> liftM (x :) $ untilNothing act
+  Nothing -> return []
 
 main :: IO ()
 main = do
   b <- hIsTerminalDevice stdout
-  if not b
-    then error "Try again comrade. TTY is required"
-    else withSDL [SDL.SDL_INIT_TIMER, SDL.SDL_INIT_JOYSTICK, SDL.SDL_INIT_HAPTIC, SDL.SDL_INIT_EVENTS] $ do
-      NC.runCurses $ do
-        w <- NC.defaultWindow
-        _ <- NC.setCursorMode NC.CursorInvisible
-        NC.setEcho False
-        njoy <- SDL.numJoysticks
-        _joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
-        nhap <- SDL.numHaptics
-        _haps <- forM [0 .. nhap - 1] $ notNull . SDL.hapticOpen
-        let loop :: Phase -> NC.Curses ()
-            loop phase = do
-              liftIO $ threadDelay 5000
-              (sdl, cur) <- pollAllEvents w
-              case update sdl cur phase of
-                Nothing -> return ()
-                Just phase' -> do
-                  if elem NC.EventResized cur -- TODO: isn't working
-                    then draw w phase'
-                    else drawChange w phase phase'
-                  loop phase'
-        let startState = Waiting{ phasePlayers = [], phaseTasks = [] }
-        draw w startState
-        loop startState
+  unless b $ error "Try again comrade. TTY is required"
+  withSDL [SDL.SDL_INIT_JOYSTICK] $ do
+
+    njoy <- SDL.numJoysticks
+    joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
+
+    vty <- Vty.standardIOConfig >>= Vty.mkVty
+    vtyEvent <- newEmptyMVar
+    _threadid <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
+
+    let loop :: Phase -> [Set.Set Button360] -> IO ()
+        loop phase prev = do
+          Vty.update vty $ Vty.picForImage $ Vty.string Vty.defAttr $ show phase
+          liftIO $ threadDelay 5000
+          sdlEvents <- untilNothing pollSDL
+          vtyEvents <- untilNothing $ tryTakeMVar vtyEvent
+          let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
+              curr = foldr ($) prev $ map modifyButtons sdlEvents
+          case update (newPresses prev curr) keys phase of
+            Nothing     -> return ()
+            Just phase' -> loop phase' curr
+        startState = Waiting{ phasePlayers = [], phaseTasks = [] }
+        startButtons = map (const Set.empty) joys
+    loop startState startButtons
