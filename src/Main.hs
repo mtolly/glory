@@ -128,44 +128,44 @@ withSDL flags = bracket_
 
 data Phase
   = Waiting
-    { phasePlayers :: [Player]
-    , phaseTasks :: [(Task, [Int])]
+    { phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
     }
   | AddPlayerYes
-    { phasePlayers :: [Player]
-    , phaseTasks :: [(Task, [Int])]
+    { phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
     }
   | AddPlayerNo
-    { phaseJoystick :: SDL.JoystickID
-    , phaseYes :: Button360
-    , phasePlayers :: [Player]
-    , phaseTasks :: [(Task, [Int])]
+    { phaseJoystick    :: SDL.JoystickID
+    , phaseYes         :: Button360
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
     }
   | AddPlayerName
-    { phaseNewPlayer :: Player
-    , phasePlayers :: [Player]
-    , phaseTasks :: [(Task, [Int])]
+    { phaseNewPlayer   :: Player
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
     }
   | DeletePlayer
-    { phaseIndex :: Int
-    , phasePlayers :: [Player]
-    , phaseTasks :: [(Task, [Int])]
+    { phaseIndex       :: Int
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
     }
   | AddTask
-    { phaseNewTask :: Task
-    , phasePlayers :: [Player]
-    , phaseTasks :: [(Task, [Int])]
+    { phaseNewTask     :: Task
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
     }
   | DeleteTask
-    { phaseIndex :: Int
-    , phasePlayers :: [Player]
-    , phaseTasks :: [(Task, [Int])]
+    { phaseIndex       :: Int
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
     }
   | Voting
     { phasePlayersYes  :: [Int]
     , phasePlayersNo   :: [Int]
-    , phaseVoteStart   :: UTCTime
-    , phaseCurrentTime :: UTCTime
+    , phaseTimeStart   :: UTCTime
+    , phaseTimeNow     :: UTCTime
     , phaseVoteLength  :: NominalDiffTime
     , phasePlayers     :: [Player]
     , phaseTasks       :: [(Task, [Int])]
@@ -173,6 +173,14 @@ data Phase
   | VoteComplete
     { phasePlayersYes  :: [Int]
     , phasePlayersNo   :: [Int]
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
+    }
+  | Inspection
+    { phasePlayersGood :: [(Int, UTCTime)]
+    , phasePlayersBad  :: [(Int, UTCTime)]
+    , phaseTimeStart   :: UTCTime
+    , phaseTimeNow     :: UTCTime
     , phasePlayers     :: [Player]
     , phaseTasks       :: [(Task, [Int])]
     }
@@ -235,10 +243,19 @@ update sdl keys phase = case phase of
       now <- getCurrentTime
       next $ Voting
         { phasePlayersYes = []
-        , phasePlayersNo = []
-        , phaseVoteStart = now
-        , phaseCurrentTime = now
+        , phasePlayersNo  = []
+        , phaseTimeStart  = now
+        , phaseTimeNow    = now
         , phaseVoteLength = 10 -- seconds
+        , ..
+        }
+    | pressedChar ' ' -> do
+      now <- getCurrentTime
+      next $ Inspection
+        { phasePlayersGood = []
+        , phasePlayersBad  = []
+        , phaseTimeStart   = now
+        , phaseTimeNow     = now
         , ..
         }
     | otherwise -> next phase
@@ -333,22 +350,46 @@ update sdl keys phase = case phase of
           return playerIndex
     next $ if
       | pressedKey Vty.KEsc -> Waiting{..}
-      | diffUTCTime now phaseVoteStart >= phaseVoteLength
-        || length newYes + length newNo == length phasePlayers
+      | diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
+        || length newYes + length newNo == length phasePlayers -- everyone's voted
         -> VoteComplete
           { phasePlayersYes = newYes
           , phasePlayersNo  = newNo
           , ..
           }
       | otherwise -> Voting
-        { phaseCurrentTime = now
+        { phaseTimeNow    = now
         , phasePlayersYes = newYes
-        , phasePlayersNo = newNo
+        , phasePlayersNo  = newNo
         , ..
         }
   VoteComplete{..} -> next $ if
     | pressedKey Vty.KEsc -> Waiting{..}
     | otherwise           -> phase
+  Inspection{..} -> do
+    now <- getCurrentTime
+    let undecided = do
+          (playerIndex, player) <- zip [0..] phasePlayers
+          guard $ not $ elem playerIndex $ map fst $ phasePlayersGood ++ phasePlayersBad
+          return (playerIndex, player)
+        newGood = phasePlayersGood ++ do
+          (playerIndex, Player{..}) <- undecided
+          (joy, btn) <- sdl
+          guard $ joy == playerJoystick && btn == playerYes
+          return (playerIndex, now)
+        newBad = phasePlayersBad ++ do
+          (playerIndex, Player{..}) <- undecided
+          (joy, btn) <- sdl
+          guard $ joy == playerJoystick && btn == playerNo
+          return (playerIndex, now)
+    next $ if
+      | pressedKey Vty.KEsc -> Waiting{..}
+      | otherwise -> Inspection
+        { phaseTimeNow     = now
+        , phasePlayersGood = newGood
+        , phasePlayersBad  = newBad
+        , ..
+        }
   where
     next = return . Just
     pressedChar c = elem (Vty.KChar c) keys
@@ -420,8 +461,8 @@ draw btns phase = case phase of
     ]
   Voting{..} -> Vty.vertCat
     [ Vty.string Vty.defAttr $ let
-      remaining = phaseVoteLength - diffUTCTime phaseCurrentTime phaseVoteStart
-      in "Vote now! " ++ show (realToFrac remaining :: Double) ++ " seconds left"
+      remaining = phaseVoteLength - diffUTCTime phaseTimeNow phaseTimeStart
+      in "Vote now! " ++ showTime remaining ++ " seconds left"
     , Vty.string Vty.defAttr ""
     , Vty.string Vty.defAttr $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
     , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
@@ -442,7 +483,32 @@ draw btns phase = case phase of
     , Vty.vertCat $ flip map phasePlayersNo $ \ix ->
         Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     ]
+  Inspection{..} -> Vty.vertCat
+    [ Vty.string Vty.defAttr $ if inspectionDone then "Inspection complete." else "Inspection is underway."
+    , Vty.string Vty.defAttr $ "Time: " ++ if inspectionDone
+      then let
+        allTimes = [ t | (_, t) <- phasePlayersGood ++ phasePlayersBad ]
+        in showTime $ diffUTCTime (foldr max phaseTimeStart allTimes) phaseTimeStart
+      else showTime $ diffUTCTime phaseTimeNow phaseTimeStart
+    , Vty.string Vty.defAttr ""
+    , Vty.vertCat $ flip map (zip [0..] phasePlayers) $ \(i, Player{..}) -> let
+        good = [ time | (j, time) <- phasePlayersGood, i == j ]
+        bad  = [ time | (j, time) <- phasePlayersBad , i == j ]
+        tasks = [ task | (task, ixs) <- phaseTasks, elem i ixs ]
+        attr = case (good, bad) of
+          ([]   , []   ) -> Vty.defAttr
+          (_ : _, _    ) -> Vty.defAttr `Vty.withForeColor` Vty.green
+          (_    , _ : _) -> Vty.defAttr `Vty.withForeColor` Vty.white `Vty.withBackColor` Vty.red
+        in Vty.vertCat
+          [ Vty.string attr $ case good ++ bad of
+            time : _ -> playerName ++ " (" ++ showTime (diffUTCTime time phaseTimeStart) ++ ")"
+            []       -> playerName
+          , Vty.vertCat [ Vty.string attr $ "  " ++ task | task <- tasks ]
+          ]
+    ] where inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
   where
+    showTime :: NominalDiffTime -> String
+    showTime t = show (realToFrac t :: Double)
     playersAndTasks = Vty.vertCat
       [ Vty.string Vty.defAttr "Inspectors:"
       , imagePlayersTasks
@@ -476,8 +542,8 @@ draw btns phase = case phase of
     imageTasks = Vty.vertCat $ zipWith taskLine [0..] $ map fst $ phaseTasks phase
     taskLine i task = Vty.horizCat
       [ Vty.string Vty.defAttr $ case phase of
-        DeleteTask{..} | phaseIndex == i -> "* "
-        _ -> "  "
+          DeleteTask{..} | phaseIndex == i -> "* "
+          _                                -> "  "
       , Vty.string Vty.defAttr task
       ]
 
