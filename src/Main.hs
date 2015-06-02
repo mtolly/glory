@@ -19,6 +19,7 @@ import Data.Char (toLower)
 import qualified Data.Set as Set
 import qualified Graphics.Vty as Vty
 import System.Random.Shuffle (shuffleM)
+import Data.Time.Clock
 
 data Button360
   -- buttons, from 0 to 14
@@ -160,7 +161,22 @@ data Phase
     , phasePlayers :: [Player]
     , phaseTasks :: [(Task, [Int])]
     }
-  deriving (Eq, Ord, Show, Read)
+  | Voting
+    { phasePlayersYes  :: [Int]
+    , phasePlayersNo   :: [Int]
+    , phaseVoteStart   :: UTCTime
+    , phaseCurrentTime :: UTCTime
+    , phaseVoteLength  :: NominalDiffTime
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
+    }
+  | VoteComplete
+    { phasePlayersYes  :: [Int]
+    , phasePlayersNo   :: [Int]
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
+    }
+  deriving (Eq, Ord, Show)
 
 data Player = Player
   { playerName :: String
@@ -171,7 +187,7 @@ data Player = Player
 
 type Task = String
 
--- | not srs, just for funsies
+-- | not srs, just sufficient
 cyrillicize :: String -> String
 cyrillicize = let
   str = "АБЦДЕФГХИЖКЛМНОПQРСТУВЪЬЙЗ"
@@ -215,6 +231,16 @@ update sdl keys phase = case phase of
     | pressedChar '-' && not (null phaseTasks)
       -> next $ DeleteTask{phaseIndex = 0, ..}
     | pressedChar 'l' -> fmap Just $ assignTasks phase
+    | pressedChar 'v' -> do
+      now <- getCurrentTime
+      next $ Voting
+        { phasePlayersYes = []
+        , phasePlayersNo = []
+        , phaseVoteStart = now
+        , phaseCurrentTime = now
+        , phaseVoteLength = 10 -- seconds
+        , ..
+        }
     | otherwise -> next phase
   AddPlayerYes{..} -> next $ case filter (not . inUse) sdl of
     (phaseJoystick, phaseYes) : _ -> AddPlayerNo{..}
@@ -289,6 +315,40 @@ update sdl keys phase = case phase of
       , ..
       }
     | otherwise -> phase
+  Voting{..} -> do
+    now <- getCurrentTime
+    let undecided = do
+          (playerIndex, player) <- zip [0..] phasePlayers
+          guard $ not $ elem playerIndex $ phasePlayersYes ++ phasePlayersNo
+          return (playerIndex, player)
+        newYes = phasePlayersYes ++ do
+          (playerIndex, Player{..}) <- undecided
+          (joy, btn) <- sdl
+          guard $ joy == playerJoystick && btn == playerYes
+          return playerIndex
+        newNo = phasePlayersNo ++ do
+          (playerIndex, Player{..}) <- undecided
+          (joy, btn) <- sdl
+          guard $ joy == playerJoystick && btn == playerNo
+          return playerIndex
+    next $ if
+      | pressedKey Vty.KEsc -> Waiting{..}
+      | diffUTCTime now phaseVoteStart >= phaseVoteLength
+        || length newYes + length newNo == length phasePlayers
+        -> VoteComplete
+          { phasePlayersYes = newYes
+          , phasePlayersNo  = newNo
+          , ..
+          }
+      | otherwise -> Voting
+        { phaseCurrentTime = now
+        , phasePlayersYes = newYes
+        , phasePlayersNo = newNo
+        , ..
+        }
+  VoteComplete{..} -> next $ if
+    | pressedKey Vty.KEsc -> Waiting{..}
+    | otherwise           -> phase
   where
     next = return . Just
     pressedChar c = elem (Vty.KChar c) keys
@@ -358,6 +418,32 @@ draw btns phase = case phase of
     , Vty.string Vty.defAttr ""
     , Vty.string Vty.defAttr "Remove which task?"
     ]
+  Voting{..} -> Vty.vertCat
+    [ Vty.string Vty.defAttr $ let
+      remaining = phaseVoteLength - diffUTCTime phaseCurrentTime phaseVoteStart
+      in "Vote now! " ++ show (realToFrac remaining :: Double) ++ " seconds left"
+    , Vty.string Vty.defAttr ""
+    , Vty.string Vty.defAttr $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
+    , Vty.string Vty.defAttr ""
+    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
+        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+    , Vty.string Vty.defAttr ""
+    , Vty.string Vty.defAttr $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
+    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
+        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+    ]
+  VoteComplete{..} -> Vty.vertCat
+    [ Vty.string Vty.defAttr $ "Voting is over."
+    , Vty.string Vty.defAttr ""
+    , Vty.string Vty.defAttr $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
+    , Vty.string Vty.defAttr ""
+    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
+        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+    , Vty.string Vty.defAttr ""
+    , Vty.string Vty.defAttr $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
+    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
+        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+    ]
   where
     playersAndTasks = Vty.vertCat
       [ Vty.string Vty.defAttr "Inspectors:"
@@ -419,8 +505,8 @@ main = do
           let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
               curr = foldr ($) prev $ map modifyButtons sdlEvents
           update (newPresses prev curr) keys phase >>= \case
-            Nothing     -> return ()
             Just phase' -> loop phase' curr
+            Nothing     -> Vty.shutdown vty
 
         startState = Waiting{ phasePlayers = [], phaseTasks = [] }
         startButtons = map (const Set.empty) joys
