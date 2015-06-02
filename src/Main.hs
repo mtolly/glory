@@ -424,25 +424,23 @@ draw btns phase = case phase of
       in "Vote now! " ++ show (realToFrac remaining :: Double) ++ " seconds left"
     , Vty.string Vty.defAttr ""
     , Vty.string Vty.defAttr $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
-    , Vty.string Vty.defAttr ""
     , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
-        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     , Vty.string Vty.defAttr ""
     , Vty.string Vty.defAttr $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
-    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
-        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+    , Vty.vertCat $ flip map phasePlayersNo $ \ix ->
+        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     ]
   VoteComplete{..} -> Vty.vertCat
     [ Vty.string Vty.defAttr $ "Voting is over."
     , Vty.string Vty.defAttr ""
     , Vty.string Vty.defAttr $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
-    , Vty.string Vty.defAttr ""
     , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
-        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     , Vty.string Vty.defAttr ""
     , Vty.string Vty.defAttr $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
-    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
-        Vty.string Vty.defAttr $ playerName $ phasePlayers !! ix
+    , Vty.vertCat $ flip map phasePlayersNo $ \ix ->
+        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     ]
   where
     playersAndTasks = Vty.vertCat
