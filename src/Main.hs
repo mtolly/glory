@@ -19,6 +19,7 @@ import Data.Char (toLower)
 import qualified Data.Set as Set
 import qualified Graphics.Vty as Vty
 import System.Random.Shuffle (shuffleM)
+import System.Random (randomRIO)
 import Data.Time.Clock
 import Data.Fixed
 
@@ -183,6 +184,11 @@ data Phase
     , phasePlayers     :: [Player]
     , phaseTasks       :: [(Task, [Int])]
     }
+  | ChosenOne
+    { phaseIndex       :: Int
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
+    }
   deriving (Eq, Ord, Show)
 
 data Player = Player
@@ -257,6 +263,9 @@ update sdl keys phase = case phase of
         , phaseTimeNow     = now
         , ..
         }
+    | pressedChar '1' && not (null phasePlayers) -> do
+      phaseIndex <- randomRIO (0, length phasePlayers - 1)
+      next ChosenOne{..}
     | otherwise -> next phase
   AddPlayerYes{..} -> next $ case filter (not . inUse) sdl of
     (phaseJoystick, phaseYes) : _ -> AddPlayerNo{..}
@@ -391,6 +400,9 @@ update sdl keys phase = case phase of
         , phasePlayersBad  = newBad
         , ..
         }
+  ChosenOne{..} -> next $ if
+    | pressedKey Vty.KEsc -> Waiting{..}
+    | otherwise           -> phase
   where
     next = return . Just
     pressedChar c = elem (Vty.KChar c) keys
@@ -506,6 +518,13 @@ draw btns phase = case phase of
           ]
     , Vty.string Vty.defAttr "" -- reset color
     ] where inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
+  ChosenOne{..} -> Vty.vertCat
+    [ Vty.string Vty.defAttr "A player has been chosen!"
+    , Vty.string Vty.defAttr ""
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $
+      "  " ++ playerName (phasePlayers !! phaseIndex)
+    , Vty.string Vty.defAttr "" -- color reset
+    ]
   where
     showTime :: NominalDiffTime -> String
     showTime t = show (realToFrac t :: Milli)
