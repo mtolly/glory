@@ -1,7 +1,7 @@
 "CONTEXT (DO NOT MODIFY)","ENGLISH (DO NOT MODIFY)","LOCALIZED (EDIT THIS COLUMN)"
-"AccessPermitInner","ARSTOTZKA","ARSTOTZKA"
+"AccessPermitInner","ARSTOTZKA","RUSTLER'S KEEP"
 "AccessPermitInner","Access Permit","Access Permit"
-"AccessPermitInner","This permit grants conditional access to the sovereign nation of Arstotzka","This permit grants conditional access to the sovereign nation of Arstotzka"
+"AccessPermitInner","This permit grants conditional access to the sovereign nation of Arstotzka","This permit grants conditional access to the nation of Rustler's Keep"
 "AccessPermitInner","NAME","NAME"
 "AccessPermitInner","NATIONALITY","NATIONALITY"
 "AccessPermitInner","PURPOSE","PURPOSE"
@@ -13,9 +13,9 @@
 "AccessPermitInner","ENTER BY","ENTER BY"
 "AccessPermitInner","Keep on person","Keep on person"
 "AccessPermitInner","Ministry of Admission","Ministry of Admission"
-"AsylumGrantInner","Arstotzka","Arstotzka"
+"AsylumGrantInner","Arstotzka","Rustler's Keep"
 "AsylumGrantInner","GRANT of ASYLUM","GRANT of ASYLUM"
-"AsylumGrantInner","This document grants conditional asylum status within Arstotzkan borders","This document grants conditional asylum status within Arstotzkan borders"
+"AsylumGrantInner","This document grants conditional asylum status within Arstotzkan borders","This document grants conditional asylum status within Keep borders"
 "AsylumGrantInner","NAT","NAT"
 "AsylumGrantInner","ID#","ID#"
 "AsylumGrantInner","DOB","DOB"
@@ -28,24 +28,31 @@
 "BizCardInnerBack","WE NEED ENGINEERS","WE NEED ENGINEERS"
 "BizCardInnerBack","WILL BEAT .GOV PAY","WILL BEAT .GOV PAY"
 "BizCardInnerBack","CONTACT NOW","CONTACT NOW"
-"BrothelHelpInner","A man named <span>Dari Ludum</span> promised me and my sister good work in Arstotzka.","A man named <span>Dari Ludum</span> promised me and my sister good work in Arstotzka."
+"BrothelHelpInner","A man named <span>Dari Ludum</span> promised me and my sister good work in Arstotzka.","A man named <span>Dari Ludum</span> promised me and my sister good work in Rustler's Keep."
 "BrothelHelpInner","I do not trust him. I am afraid he will take my passport and force me to work at brothel. He is in line today.","I do not trust him. I am afraid he will take my passport and force me to work at brothel. He is in line today."
 "BrothelHelpInner","Please do something.","Please do something."
 "BulletinInnerDiploTut","Diplomat","Diplomat"
 "BulletinInnerDiploTut","Verification Procedure","Verification Procedure"
 "BulletinInnerDiploTut","Verify issuing country","Verify issuing country"
 "BulletinInnerDiploTut","Verify identity","Verify identity"
-"BulletinInnerDiploTut","Verify diplomatic access to Arstotzka","Verify diplomatic access to Arstotzka"
+"BulletinInnerDiploTut","Verify diplomatic access to Arstotzka","Verify diplomatic access to Rustler's Keep"
 "BulletinInnerMissingTut","Missing documents can be correlated by highlighting counter and pertinent entry in rule book.","Missing documents can be correlated by highlighting counter and pertinent entry in rule book."
 "BulletinInnerRuleTut","Correlate pertinent entry in rule book with violating information to enable further options.","Correlate pertinent entry in rule book with violating information to enable further options."
 "BulletinInnerContraTut","Correlate discovered weapons and contraband with rulebook entry.","Correlate discovered weapons and contraband with rulebook entry."
 "BulletinInnerCorrelateTut","Highlight two pieces of discrepant information from INSPECT mode to enable interrogation.","Highlight two pieces of discrepant information from INSPECT mode to enable interrogation."
+"BulletinInnerTouchTut","Touch and drag to fine-tune highlighted selection.","Touch and drag to fine-tune highlighted selection."
 "BulletinInnerPassportTut","Pay attention to passport nationality.","Pay attention to passport nationality."
-"BulletinInnerBoothTut","Arstotzkan<br>Ministry of Admission","Arstotzkan<br>Ministry of Admission"
+"BulletinInnerBoothTut","Arstotzkan<br>Ministry of Admission","Rustlers' Keep<br>Ministry of Admission"
 "BulletinInnerBoothTut","Inspector's Booth","Inspector's Booth"
 "BulletinInnerBoothTut","Shutter","Shutter"
 "BulletinInnerBoothTut","Counter","Counter"
 "BulletinInnerBoothTut","Rule Book<br>Audio Transcript<br>Bulletin Storage<br>Time &amp; Date","Rule Book<br>Audio Transcript<br>Bulletin Storage<br>Time &amp; Date"
+"BulletinInnerBoothTut2","Arstotzkan<br>Ministry of Admission","Rustler's Keep<br>Ministry of Admission"
+"BulletinInnerBoothTut2","Inspector's Booth","Inspector's Booth"
+"BulletinInnerBoothTut2","Shutter","Shutter"
+"BulletinInnerBoothTut2","Counter","Counter"
+"BulletinInnerBoothTut2","Audio Transcript<br>Rule Book<br>Weight<br>","Audio Transcript<br>Rule Book<br>Weight<br>"
+"BulletinInnerBoothTut2","Bulletin Storage<br>Time &amp; Date","Bulletin Storage<br>Time &amp; Date"
 "BulletinInnerGunTut","Weapons Protocol","Weapons Protocol"
 "BulletinInnerGunTut","WHEN ALARM SOUNDS","WHEN ALARM SOUNDS"
 "BulletinInnerGunTut","Drop key on tumbler to unlock weapon.","Drop key on tumbler to unlock weapon."
@@ -67,15 +74,15 @@
 "DiplomaticAuthInner","Unconditional access to all named Council of Nations member states must be granted upon presentation.","Unconditional access to all named Council of Nations member states must be granted upon presentation."
 "DiplomaticAuthInner","This document has no expiry.","This document has no expiry."
 "DiplomaticAuthInner","COUNCIL OF NATIONS - SEVEN MEMBER FORUM","COUNCIL OF NATIONS - SEVEN MEMBER FORUM"
-"EntryPermitInner","ARSTOTZKA","ARSTOTZKA"
+"EntryPermitInner","ARSTOTZKA","RUSTLER'S KEEP"
 "EntryPermitInner","Entry Permit","Entry Permit"
-"EntryPermitInner","Conditional entry to the sovereign nation of Arstotzka is hereby granted to","Conditional entry to the sovereign nation of Arstotzka is hereby granted to"
+"EntryPermitInner","Conditional entry to the sovereign nation of Arstotzka is hereby granted to","Conditional entry to the sovereign nation of Rustler's Keep is hereby granted to"
 "EntryPermitInner","bearing passport number","bearing passport number"
 "EntryPermitInner","Purpose","Purpose"
 "EntryPermitInner","Duration","Duration"
 "EntryPermitInner","Enter by","Enter by"
 "EntryPermitInner","Ministry of Admission","Ministry of Admission"
-"EntryTicketInner","Arstotzka","Arstotzka"
+"EntryTicketInner","Arstotzka","Rustler's"
 "EntryTicketInner","ENTRY TICKET","ENTRY TICKET"
 "EntryTicketInner","VALID ON","VALID ON"
 "EzicNoteInnerOpen","READ QUICKLY","READ QUICKLY"
@@ -94,7 +101,7 @@
 "ForgeryFlyerInnerBack","Entry Ticket","Entry Ticket"
 "ForgeryFlyerInnerBack","*<br>","*<br>"
 "ForgeryFlyerInnerBack","Client must provide existing Obristan passport to be modified with new info","Client must provide existing Obristan passport to be modified with new info"
-"ForgeryFlyerInnerBack","Service at border Arstotzka/Obristan","Service at border Arstotzka/Obristan"
+"ForgeryFlyerInnerBack","Service at border Arstotzka/Obristan","Service at border<br>R. Keep/Obristan"
 "ForgeryFlyerInnerBack","Ask for Timofei Wee","Ask for Timofei Wee"
 "GymFlyerInner","Underweight?Weak?Tired?","Underweight?Weak?Tired?"
 "GymFlyerInner","JOIN BEST GYM!","JOIN BEST GYM!"
@@ -103,7 +110,7 @@
 "HintMissingInner","THIS ENTRANT HAS NO DOCUMENTS","THIS ENTRANT HAS NO DOCUMENTS"
 "HintMissingInner","To proceed, use INSPECT mode to interrogate.","To proceed, use INSPECT mode to interrogate."
 "HintMissingInner","Review page 2 of today's bulletin for full instructions.","Review page 2 of today's bulletin for full instructions."
-"IdCardInner","ARSTOTZKA IDENTITY CARD","ARSTOTZKA IDENTITY CARD"
+"IdCardInner","ARSTOTZKA IDENTITY CARD","RUSTLER'S IDENTITY CARD"
 "IdCardInner","DOB","DOB"
 "IdCardInner","HT.","HT."
 "IdCardInner","WT.","WT."
@@ -141,7 +148,7 @@
 "PassportInnerArstotzka","SEX","SEX"
 "PassportInnerArstotzka","ISS.","ISS."
 "PassportInnerArstotzka","EXP.","EXP."
-"PassportInnerArstotzka","ARSTOTZKA","ARSTOTZKA"
+"PassportInnerArstotzka","ARSTOTZKA","RUSTLER'S KEEP"
 "PassportInnerImpor","ENTRY VISA","ENTRY VISA"
 "PassportInnerImpor","DOB.","DOB."
 "PassportInnerImpor","SEX","SEX"
@@ -194,10 +201,10 @@
 "PressPassInner","INTERNATIONAL","INTERNATIONAL"
 "PressPassInner","PRESS","PRESS"
 "PressPassInner","IDENTIFICATION","IDENTIFICATION"
-"RuleDiploAccess","AUTHORIZATION MUST GRANT ACCESS<br> TO ARSTOTZKA","AUTHORIZATION MUST GRANT ACCESS<br> TO ARSTOTZKA"
+"RuleDiploAccess","AUTHORIZATION MUST GRANT ACCESS<br> TO ARSTOTZKA","AUTHORIZATION MUST GRANT ACCESS<br> TO RUSTLER'S KEEP"
 "RuleIssuingCity","PASSPORT <span>ISS.</span> FIELD MUST BE VALID","PASSPORT <span>ISS.</span> FIELD MUST BE VALID"
 "RuleSealRequired","DOCUMENT MUST<br>HAVE A SEAL","DOCUMENT MUST<br>HAVE A SEAL"
-"RulesInnerHome","Arstotzkan","Arstotzkan"
+"RulesInnerHome","Arstotzkan","Rustler's Keep"
 "RulesInnerHome","Ministry<span>of</span>Admission","Ministry<span>of</span>Admission"
 "RulesInnerHome","RULES","RULES"
 "RulesInnerHome","&amp;","&amp;"
@@ -219,13 +226,20 @@
 "RulesInnerBooth","Rule Book<br>Audio Trans.<br>Bulletin<br>Time &amp; Date","Rule Book<br>Audio Trans.<br>Bulletin<br>Time &amp; Date"
 "RulesInnerBooth","UPGRADES","UPGRADES"
 "RulesInnerBooth","NO UPGRADES<br>INSTALLED","NO UPGRADES<br>INSTALLED"
+"RulesInnerBooth2","INSPECTOR'S BOOTH","INSPECTOR'S BOOTH"
+"RulesInnerBooth2","Shutter","Shutter"
+"RulesInnerBooth2","Counter","Counter"
+"RulesInnerBooth2","Audio Trans.<br>Rule Book<br>Weight","Audio Trans.<br>Rule Book<br>Weight"
+"RulesInnerBooth2","Bulletin<br>Time &amp; Date","Bulletin<br>Time &amp; Date"
+"RulesInnerBooth2","UPGRADES","UPGRADES"
+"RulesInnerBooth2","NO UPGRADES<br>INSTALLED","NO UPGRADES<br>INSTALLED"
 "RulesInnerDocs","OFFICIALLY RECOGNIZED","OFFICIALLY RECOGNIZED"
 "RulesInnerDocs","DOCUMENTS","DOCUMENTS"
 "RulesInnerDocs","CONTENTS","CONTENTS"
 "RulesInnerEntryPermit","ENTRY PERMIT","ENTRY PERMIT"
 "RulesInnerEntryPermit","VALID SEALS","VALID SEALS"
-"RulesInnerIdCard","ARSTOTZKAN<br>ID CARD","ARSTOTZKAN<br>ID CARD"
-"RulesInnerIdCard","ISSUED TO ALL ARSTOTZKAN CITIZENS","ISSUED TO ALL ARSTOTZKAN CITIZENS"
+"RulesInnerIdCard","ARSTOTZKAN<br>ID CARD","RUSTLER'S<br>ID CARD"
+"RulesInnerIdCard","ISSUED TO ALL ARSTOTZKAN CITIZENS","ISSUED TO ALL RUSTLER CITIZENS"
 "RulesInnerIdCard","DISTRICTS","DISTRICTS"
 "RulesInnerIdSupplement","IDENTITY<br>SUPPLEMENT","IDENTITY<br>SUPPLEMENT"
 "RulesInnerIdSupplement","ISSUED TO ALL QUALIFIED FOREIGNERS","ISSUED TO ALL QUALIFIED FOREIGNERS"
@@ -258,8 +272,8 @@
 "RulesInnerConfiscation","MOI","MOI"
 "RulesInnerLast","PROPERTY OF","PROPERTY OF"
 "RulesInnerLast","M.O.A.","M.O.A."
-"RulesInnerLast","GLORY TO ARSTOTZKA","GLORY TO ARSTOTZKA"
-"RulesInnerLast","Arstotzkan","Arstotzkan"
+"RulesInnerLast","GLORY TO ARSTOTZKA","GLORY TO THE KEEP"
+"RulesInnerLast","Arstotzkan","Rustler's Keep"
 "RulesInnerLast","Ministry of Admission","Ministry of Admission"
 "RulesInnerLast","Rules &amp; Regulations","Rules &amp; Regulations"
 "RulesInnerLast","for Inspectors","for Inspectors"
@@ -280,7 +294,8 @@
 "RulesUpgrade2","RULEBOOK SHORTCUTS","RULEBOOK SHORTCUTS"
 "RulesUpgrade3","QUICK INSPECT","QUICK INSPECT"
 "RulesUpgrade3","DOUBLE-CLICK","DOUBLE-CLICK"
-"SeizureSlipInner","Arstotzka Ministry of Admission","Arstotzka Ministry of Admission"
+"RulesUpgrade4","MULTITOUCH","MULTITOUCH"
+"SeizureSlipInner","Arstotzka Ministry of Admission","Rustler's Keep Ministry of Admission"
 "SeizureSlipInner","PASSPORT SEIZURE SLIP","PASSPORT SEIZURE SLIP"
 "SeizureSlipInner","ENTRY VISA","ENTRY VISA"
 "SeizureSlipInner","Your passport has been seized.","Your passport has been seized."
@@ -319,8 +334,8 @@
 "LoadButtonNew","NEW","NEW"
 "LoadDay","DAY","DAY"
 "LoadDrag","DRAG TO SCROLL","DRAG TO SCROLL"
-"News","The Truth of Arstotzka","The Truth of Arstotzka"
-"News","No Charge","No Charge"
+"News","The Truth of Arstotzka","The Memes of the Keep"
+"News","No Charge","$4.20"
 "ReasonButton","REASON","REASON"
 "RifleKill","KILL","KILL"
 "RifleTranq","TRANQ","TRANQ"
@@ -387,22 +402,22 @@
 "news:KILLERATHLETE","Girlfriend Killed In Jealous Rage?","Girlfriend Killed In Jealous Rage?"
 "news:KILLERATHLETE_DETAINED","Vince Lestrade Apprehended In Grestin!","Vince Lestrade Apprehended In Grestin!"
 "news:KILLERATHLETE_DETAINED","Track Champ Looks Quite Guilty Now","Track Champ Looks Quite Guilty Now"
-"news:KILLERATHLETE_APPROVED","Vince Lestrade Spotted in Arstotzka","Vince Lestrade Spotted in Arstotzka"
+"news:KILLERATHLETE_APPROVED","Vince Lestrade Spotted in Arstotzka","Vince Lestrade Spotted in Rustler's Keep"
 "news:KILLERATHLETE_DENIED","Vince Lestrade Apprehended In Kolechia!","Vince Lestrade Apprehended In Kolechia!"
 "news:DIPLOMAT_FIRST","Kolechia Sends Top-Level Diplomat","Kolechia Sends Top-Level Diplomat"
 "news:DIPLOMAT_FIRST","Normalizing Trade Top Issue","Normalizing Trade Top Issue"
-"news:BUSTED_SPY","Top-level Kolechian Exposed as Arstotzkan Spy!","Top-level Kolechian Exposed as Arstotzkan Spy!"
+"news:BUSTED_SPY","Top-level Kolechian Exposed as Arstotzkan Spy!","Top-level Kolechian Exposed as Rustler Spy!"
 "news:BUSTED_SPY","Missing From Post, Presumed Dead","Missing From Post, Presumed Dead"
-"news:BUSTED_SPY_GAVEREALDOCS","Kolechia Cleans House - Eliminates Arstotzkan Spies","Kolechia Cleans House - Eliminates Arstotzkan Spies"
+"news:BUSTED_SPY_GAVEREALDOCS","Kolechia Cleans House - Eliminates Arstotzkan Spies","Kolechia Cleans House - Eliminates Rustler Spies"
 "news:BUSTED_SPY_GAVEREALDOCS","Heroic Agents Compromised","Heroic Agents Compromised"
 "news:BUSTED_SPY_GAVEFAKEDOCS","Kolechia Cleans House - Attacks Its Own!","Kolechia Cleans House - Attacks Its Own!"
 "news:BUSTED_SPY_GAVEFAKEDOCS","Round Of Disappearances Blamed On Faulty Evidence","Round Of Disappearances Blamed On Faulty Evidence"
 "news:FORGERY_NEWS","Theft At Ministry Of Admission!","Theft At Ministry Of Admission!"
 "news:FORGERY_NEWS","Limited Effects - Few Items Stolen","Limited Effects - Few Items Stolen"
-"news:SECRET_SOCIETY","The History of Arstotzka","The History of Arstotzka"
+"news:SECRET_SOCIETY","The History of Arstotzka","The History of the Keep"
 "news:SECRET_SOCIETY","In Pictures and Words - Mostly Words","In Pictures and Words - Mostly Words"
 "news:CRIMINAL_ACTIVITY","A Criminal's Safe Haven","A Criminal's Safe Haven"
-"news:CRIMINAL_ACTIVITY","Arstotzka Earns Dubious Reputation","Arstotzka Earns Dubious Reputation"
+"news:CRIMINAL_ACTIVITY","Arstotzka Earns Dubious Reputation","Rustler's Keep Earns Dubious Reputation"
 "news:LOSING_GUARDS","Ministries Fight Over Staff","Ministries Fight Over Staff"
 "news:LOSING_GUARDS","Qualified Guards, Soldiers In Demand","Qualified Guards, Soldiers In Demand"
 "news:LOSING_GUARDS","Consolidation, Reassignment At Border","Consolidation, Reassignment At Border"
@@ -415,9 +430,9 @@
 "news:BORDER_TARGETED","Border Safety Continually Questioned","Border Safety Continually Questioned"
 "news:BIKERUNNER_NEWS","Coordinated Border Breach!","Coordinated Border Breach!"
 "news:BIKERUNNER_NEWS","Unknown Assailants Swamp Security","Unknown Assailants Swamp Security"
-"news:NOSY_JOURNALIST_APPROVED","Arstotzka's Frail Border","Arstotzka's Frail Border"
+"news:NOSY_JOURNALIST_APPROVED","Arstotzka's Frail Border","The Keep's Frail Border"
 "news:NOSY_JOURNALIST_APPROVED","United Fed Reporter Exposes Lax Protocols","United Fed Reporter Exposes Lax Protocols"
-"news:NOSY_JOURNALIST_DENIED","Arstotzka's Iron Border","Arstotzka's Iron Border"
+"news:NOSY_JOURNALIST_DENIED","Arstotzka's Iron Border","The Keep's Iron Border"
 "news:NOSY_JOURNALIST_DENIED","Int. Media Reveals Entry Visa Bias","Int. Media Reveals Entry Visa Bias"
 "news:IDSUPPLEMENT_INTRO","Another Bomber Slips Through!","Another Bomber Slips Through!"
 "news:IDSUPPLEMENT_INTRO","Immigrant Screening Falls Short","Immigrant Screening Falls Short"
@@ -427,18 +442,18 @@
 "news:WHISTLEBLOWER_SETUP0","Whistleblower On The Run","Whistleblower On The Run"
 "news:WHISTLEBLOWER_SETUP1","Antegrian Whistleblower Denied Asylum In Republia","Antegrian Whistleblower Denied Asylum In Republia"
 "news:WHISTLEBLOWER_SETUP2","Antegrian Whistleblower Turned Away From United Fed","Antegrian Whistleblower Turned Away From United Fed"
-"news:WHISTLEBLOWER_COMING","Antegrian Whistleblower Accepted By Arstotzka","Antegrian Whistleblower Accepted By Arstotzka"
+"news:WHISTLEBLOWER_COMING","Antegrian Whistleblower Accepted By Arstotzka","Antegrian Whistleblower Accepted By the Keep"
 "news:WHISTLEBLOWER_COMING","Move Risks Angering Neighbors","Move Risks Angering Neighbors"
 "news:WHISTLEBLOWER_IN","Antegrian Whistleblower Arrives - Disappears Immediately","Antegrian Whistleblower Arrives - Disappears Immediately"
 "news:WHISTLEBLOWER_OUT","Antegrian Whistleblower Turned Away - Whereabouts Unknown","Antegrian Whistleblower Turned Away - Whereabouts Unknown"
 "news:IMPOR_UNHAPPY","Impor Protests Unbalanced Trade Restrictions","Impor Protests Unbalanced Trade Restrictions"
-"news:IMPOR_UNHAPPY","Claims Arstotzka Unfairly Taxes Imporian Goods","Claims Arstotzka Unfairly Taxes Imporian Goods"
+"news:IMPOR_UNHAPPY","Claims Arstotzka Unfairly Taxes Imporian Goods","Claims the Keep Unfairly Taxes Imporian Goods"
 "news:IMPOR_SANCTIONS_START","Impor Begins Trade Sanctions!","Impor Begins Trade Sanctions!"
-"news:IMPOR_SANCTIONS_START","Immediately Restricts All Imports From Arstotzka","Immediately Restricts All Imports From Arstotzka"
+"news:IMPOR_SANCTIONS_START","Immediately Restricts All Imports From Arstotzka","Immediately Restricts All Imports From Rustler's Keep"
 "news:IMPOR_SANCTIONS_END","Impor Sanctions End!","Impor Sanctions End!"
 "news:IMPOR_SANCTIONS_END","Over So Fast? What Happened?","Over So Fast? What Happened?"
 "news:SURGERY_SETUP","Breakthrough Spinal Surgery Perfected","Breakthrough Spinal Surgery Perfected"
-"news:SURGERY_SETUP","Only Possible With Arstotzkan Expertise","Only Possible With Arstotzkan Expertise"
+"news:SURGERY_SETUP","Only Possible With Arstotzkan Expertise","Only Possible With Rustler Expertise"
 "news:VIRUS_PRIMER","Polio Resurfaces In United Fed","Polio Resurfaces In United Fed"
 "news:VIRUS_PRIMER","Isolated Diagnosis Or Something More?","Isolated Diagnosis Or Something More?"
 "news:VIRUS_BAN_UNITED_FED","Full-blown Epidemic Threatens United Fed!","Full-blown Epidemic Threatens United Fed!"
@@ -446,7 +461,7 @@
 "news:VIRUS_REQUIRE_CERT","Ministry of Health Acts To Protect Citizens","Ministry of Health Acts To Protect Citizens"
 "news:VIRUS_REQUIRE_CERT","New Policy, Safeguards At Borders","New Policy, Safeguards At Borders"
 "news:SERIAL_KILLER","Serial Child Killer Escapes United Fed Prison!","Serial Child Killer Escapes United Fed Prison!"
-"news:SERIAL_KILLER","Simon Wens: An Arstotzkan Native - Returning Home?","Simon Wens: An Arstotzkan Native - Returning Home?"
+"news:SERIAL_KILLER","Simon Wens: An Arstotzkan Native - Returning Home?","Simon Wens: A Keep Native - Returning Home?"
 "news:SERIAL_KILLER_MURDERED","Bloody Scene In Gennistora!","Bloody Scene In Gennistora!"
 "news:SERIAL_KILLER_MURDERED","Simon Wens Found Dead In Confusing Mess","Simon Wens Found Dead In Confusing Mess"
 "news:EZIC_ATTACK0","Grestin Metro Halted","Grestin Metro Halted"
@@ -469,7 +484,7 @@
 "news:BORDER_CLOSING","Too Open, Too Soon?","Too Open, Too Soon?"
 "text:language_code","en","en-RK"
 "text:language_name","ENGLISH","RUSTLER'S KEEP"
-"text:language_author","Author","Author"
+"text:language_author","Author","Sempai"
 "text:wrap_hyphen","-","-"
 "text:created_by","created by Lucas Pope","created by Lucas Pope"
 "text:papers_please","Papers, please.","Papers, please."
@@ -484,7 +499,7 @@
 "text:border_comeback","COME BACK AT 6AM TOMORROW","COME BACK AT 6AM TOMORROW"
 "text:border_announce0","ENTRY IS NOT GUARANTEED","ENTRY IS NOT GUARANTEED"
 "text:border_announce1","HAVE YOUR DOCUMENTS READY","HAVE YOUR DOCUMENTS READY"
-"text:border_announce2","ARSTOTZKA WELCOMES YOU","ARSTOTZKA WELCOMES YOU"
+"text:border_announce2","ARSTOTZKA WELCOMES YOU","THE KEEP WELCOMES YOU"
 "text:border_guardout","OUT!","OUT!"
 "text:border_elisa","ELISA!","ELISA!"
 "text:family_son_budget","SON","SON"
@@ -721,7 +736,7 @@ Inspector,
 
 $content
 
-Glory to Arstotzka.","Arstotzka
+Glory to Arstotzka.","Rustler's Keep
 Ministry of Admission
 Official Bulletin
 
@@ -729,7 +744,7 @@ Inspector,
 
 $content
 
-Glory to Arstotzka."
+Glory to the Keep."
 "text:bulletin_notice","Arstotzka
 Ministry of Admission
 Official Bulletin
@@ -738,7 +753,7 @@ NOTICE:
 
 $content
 
-Glory to Arstotzka.","Arstotzka
+Glory to Arstotzka.","Rustler's Keep
 Ministry of Admission
 Official Bulletin
 
@@ -746,7 +761,7 @@ NOTICE:
 
 $content
 
-Glory to Arstotzka."
+Glory to the Keep."
 "text:bulletin_endless","Arstotzka
 Ministry of Admission
 Official Bulletin
@@ -755,7 +770,7 @@ $style
 
 $course
 
-Glory to Arstotzka.","Arstotzka
+Glory to Arstotzka.","Rustler's Keep
 Ministry of Admission
 Official Bulletin
 
@@ -763,7 +778,7 @@ $style
 
 $course
 
-Glory to Arstotzka."
+Glory to the Keep."
 "bulletin:1A","Welcome to your new position at Grestin Border Checkpoint.
 
 Stamp passport ENTRY VISA and return documents to entrant.
@@ -774,7 +789,7 @@ Deny all foreigners.","Welcome to your new position at Grestin Border Checkpoint
 
 Stamp passport ENTRY VISA and return documents to entrant.
 
-Entry is restricted to Arstotzkan citizens only.
+Entry is restricted to Rustler citizens only.
 
 Deny all foreigners."
 "bulletin:2A","From today, foreigners with a valid passport are permitted to enter.
@@ -826,7 +841,7 @@ Entry tickets are no longer sufficient.
 
 Continued...","Stricter credential requirements have been instituted.
 
-Arstotzkan citizens must show their ID CARD.
+Rustler citizens must show their ID CARD.
 
 Foreigners must secure and present a valid ENTRY PERMIT.
 
@@ -905,7 +920,7 @@ Nothing important was stolen but intelligence suggests counterfeiters have alrea
 
 Continued...","A break-in at M.O.A. offices may have compromised our document sealing plates.
 
-Nothing important was stolen but intelligence suggests counterfeiters have already begun forging official Arstotzkan documents.
+Nothing important was stolen but intelligence suggests counterfeiters have already begun forging official Rustler documents.
 
 Continued..."
 "bulletin:11B","__________________________
@@ -999,7 +1014,7 @@ If applicant clarifies discrepancies sufficiently, approval is authorized even w
 
 Under request from the Ministry of Trade, the Ministry of Admission will react to this violation.
 
-Deny all travelers from Impor.","Impor rejects all imported goods from Arstotzka.
+Deny all travelers from Impor.","Impor rejects all imported goods from Rustler's Keep.
 
 Under request from the Ministry of Trade, the Ministry of Admission will react to this violation.
 
@@ -1033,7 +1048,7 @@ The Ministry of Information has requested our cooperation.
 
 A special drawer for confiscating documents has been installed in your booth.
 
-Continued...","Recent events have cast suspicion on the activities of Arstotzkan citizens in the ALTAN district.
+Continued...","Recent events have cast suspicion on the activities of Rustler citizens in the ALTAN district.
 
 The Ministry of Information has requested our cooperation.
 
@@ -1048,7 +1063,7 @@ Travelers may still be granted entry if passport is confiscated and no other rul
 
 PASSPORT SEIZURE slips will be issued to allow entry or denial without a passport.","The rulebook has been updated with information regarding confiscation policy.
 
-Confiscate all Arstotzkan passports from residents living in ALTAN district.
+Confiscate all Rustler passports from residents living in ALTAN district.
 
 Travelers may still be granted entry if passport is confiscated and no other rules are violated.
 
@@ -1061,7 +1076,7 @@ Continue to confiscate Arstotzkan passports from residents living in ALTAN distr
 
 Deny all entrants from United Federation.
 
-Continue to confiscate Arstotzkan passports from residents living in ALTAN district."
+Continue to confiscate Rustler passports from residents living in ALTAN district."
 "bulletin:26A","The risk of disease is too great. A new protocol has been instituted.
 
 All entrants must carry a valid CERTIFICATE OF VACCINATION with an up-to-date POLIO vaccine.
@@ -1079,7 +1094,7 @@ Continued..."
 
 Continue to confiscate Arstotzkan passports from residents living in ALTAN district.","United Federation citizens are permitted entry with such certification.
 
-Continue to confiscate Arstotzkan passports from residents living in ALTAN district."
+Continue to confiscate Rustler passports from residents living in ALTAN district."
 "bulletin:27A","In order to improve efficiency, the ENTRY PERMIT and ID SUPPLEMENT have been consolidated into a single ACCESS PERMIT.
 
 Foreigners are now required to present a valid ACCESS PERMIT.
@@ -1097,7 +1112,7 @@ Continue to confiscate Arstotzkan passports from residents living in ALTAN distr
 
 An important Kolechian negotiator will arrive today to discuss issues at this checkpoint.
 
-Continue to confiscate Arstotzkan passports from residents living in ALTAN district."
+Continue to confiscate Rustler passports from residents living in ALTAN district."
 "bulletin:28A","In response to continued attacks, the Ministry of Information is expanding the passport confiscation program.
 
 Confiscate all Arstotzkan passports from native entrants.
@@ -1106,7 +1121,7 @@ There are no exceptions.
 
 Do not confiscate foreign passports.","In response to continued attacks, the Ministry of Information is expanding the passport confiscation program.
 
-Confiscate all Arstotzkan passports from native entrants.
+Confiscate all Rustler passports from native entrants.
 
 There are no exceptions.
 
@@ -1124,7 +1139,7 @@ Your audit is scheduled for: DECEMBER 24
 DO NOT LEAVE YOUR DESIGNATED REGION.
 
 Continued..."
-"bulletin:29B","Continue to confiscate all Arstotzkan passports from native entrants.","Continue to confiscate all Arstotzkan passports from native entrants."
+"bulletin:29B","Continue to confiscate all Arstotzkan passports from native entrants.","Continue to confiscate all Rustler passports from native entrants."
 "bulletin:30A","[NOTICE] All government workers are subject to a thorough information audit. Involvement with unauthorized groups is grounds for immediate arrest.
 
 Your audit is scheduled for: DECEMBER 24
@@ -1138,7 +1153,7 @@ Your audit is scheduled for: DECEMBER 24
 DO NOT LEAVE YOUR DESIGNATED REGION.
 
 Continued..."
-"bulletin:30B","Continue to confiscate all Arstotzkan passports from native entrants.","Continue to confiscate all Arstotzkan passports from native entrants."
+"bulletin:30B","Continue to confiscate all Arstotzkan passports from native entrants.","Continue to confiscate all Rustler passports from native entrants."
 "bulletin:31A","The Ministry of Admission is involved in discussions regarding the closure of this checkpoint.
 
 Until a decision is made, maintain your duties as ordered.
@@ -1156,7 +1171,7 @@ Continue to confiscate all Arstotzkan passports from native entrants.","You are 
 
 DO NOT LEAVE YOUR DESIGNATED REGION.
 
-Continue to confiscate all Arstotzkan passports from native entrants."
+Continue to confiscate all Rustler passports from native entrants."
 "facts","$paper: Invalid $fact","$paper: Invalid $fact"
 "facts","Missing $paper","Missing $paper"
 "facts","$0 DISTRICT","$0  DISTRICT"
@@ -1169,7 +1184,7 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "facts","UnitedFed","UnitedFed"
 "facts","Impor","Impor"
 "facts","Kolechia","Kolechia"
-"facts","Arstotzka","Arstotzka"
+"facts","Arstotzka","Rustler's Keep"
 "facts","Skal","Skal"
 "facts","Lorndaz","Lorndaz"
 "facts","Mergerous","Mergerous"
@@ -1278,7 +1293,7 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "facts","Forged Work Pass","Forged Work Pass"
 "facts","Id Card: Non-matching photo","Id Card: Non-matching photo"
 "facts","Forged Access Permit","Forged Access Permit"
-"facts","No Diplomatic Access to Arstotzka","No Diplomatic Access to Arstotzka"
+"facts","No Diplomatic Access to Arstotzka","No Diplomatic Access to Rustler's Keep"
 "facts","Forged Diplomatic Auth","Forged Diplomatic Auth"
 "facts","Forged Asylum Grant Seal","Forged Asylum Grant Seal"
 "facts","Necessary vaccine expired","Necessary vaccine expired"
@@ -1288,7 +1303,7 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "facts","Fingerprints do not match record","Fingerprints do not match record"
 "facts","Cobrastan is not a real country","Cobrastan is not a real country"
 "facts","No entry from Antegria","No entry from Antegria"
-"facts","No entry from Arstotzka","No entry from Arstotzka"
+"facts","No entry from Arstotzka","No entry from Rustler's Keep"
 "facts","No entry from Republia","No entry from Republia"
 "facts","No entry from United Fed","No entry from United Fed"
 "facts","No entry from Obristan","No entry from Obristan"
@@ -1303,7 +1318,7 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "facts","Workers must have a work pass","Workers must have a work pass"
 "facts","Citizens must have an id card","Citizens must have an id card"
 "facts","Foreigners require an id supplement","Foreigners require an id supplement"
-"facts","Arstotzkan citizens only","Arstotzkan citizens only"
+"facts","Arstotzkan citizens only","Rustler citizens only"
 "facts","No entry from United Federation","No entry from United Federation"
 "facts","No weapons or contraband","No weapons or contraband"
 "facts","All Kolechians must be searched","All Kolechians must be searched"
@@ -1311,8 +1326,8 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "facts","Entrant must have polio vaccine cert","Entrant must have polio vaccine cert"
 "facts","Asylum seekers must have a grant","Asylum seekers must have a grant"
 "facts","Foreigners require an access permit","Foreigners require an access permit"
-"facts","CONFISCATE ARSTOTZKAN PASSPORTS BELONGING TO ALTAN RESIDENTS.","CONFISCATE ARSTOTZKAN PASSPORTS BELONGING TO ALTAN RESIDENTS."
-"facts","CONFISCATE ALL ARSTOTZKAN PASSPORTS. NO EXCEPTIONS.","CONFISCATE ALL ARSTOTZKAN PASSPORTS. NO EXCEPTIONS."
+"facts","CONFISCATE ARSTOTZKAN PASSPORTS BELONGING TO ALTAN RESIDENTS.","CONFISCATE RUSTLER PASSPORTS BELONGING TO ALTAN RESIDENTS."
+"facts","CONFISCATE ALL ARSTOTZKAN PASSPORTS. NO EXCEPTIONS.","CONFISCATE ALL RUSTLER PASSPORTS. NO EXCEPTIONS."
 "facts","Passport not confiscated","Passport not confiscated"
 "paper:SecondPassport","West Grestin","West Grestin"
 "paper:Rules","Basic Rules","Basic Rules"
@@ -1327,9 +1342,9 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "paper:Rules","Federation","Federation"
 "paper:Rules","Impor","Impor"
 "paper:Rules","Kolechia","Kolechia"
-"paper:Rules","Arstotzka","Arstotzka"
+"paper:Rules","Arstotzka","Rustler's Keep"
 "paper:Rules","ANTEGRIA","ANTEGRIA"
-"paper:Rules","ARSTOTZKA","ARSTOTZKA"
+"paper:Rules","ARSTOTZKA","RUSTLER'S KEEP"
 "paper:Rules","IMPOR","IMPOR"
 "paper:Rules","KOLECHIA","KOLECHIA"
 "paper:Rules","OBRISTAN","OBRISTAN"
@@ -1347,50 +1362,50 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "intro","The October labor lottery is complete. Your name was pulled.","The October labor lottery is complete. Your name was pulled."
 "intro","For immediate placement, report to the Ministry of Admission at Grestin Border Checkpoint.","For immediate placement, report to the Ministry of Admission at Grestin Border Checkpoint."
 "intro","An apartment will be provided for you and your family in East Grestin. Expect a Class-8 dwelling.","An apartment will be provided for you and your family in East Grestin. Expect a Class-8 dwelling."
-"intro","Glory to Arstotzka.","Glory to Arstotzka."
-"end:in-debt","Arstotzka has zero tolerance for delinquency.","Arstotzka has zero tolerance for delinquency."
+"intro","Glory to Arstotzka.","Glory to the Keep."
+"end:in-debt","Arstotzka has zero tolerance for delinquency.","Rustler's Keep has zero tolerance for delinquency."
 "end:in-debt","Your family will be sent back to their village.","Your family will be sent back to their village."
 "end:in-debt","You are under arrest until your debts are repaid.","You are under arrest until your debts are repaid."
 "end:in-debt","A replacement inspector will be found easily.","A replacement inspector will be found easily."
-"end:in-debt","Glory to Arstotzka.","Glory to Arstotzka."
+"end:in-debt","Glory to Arstotzka.","Glory to the Keep."
 "end:family-dead","Your entire family is gone.","Your entire family is gone."
-"end:family-dead","The Ministry Of Labor focuses on Arstotzka's future growth.","The Ministry Of Labor focuses on Arstotzka's future growth."
+"end:family-dead","The Ministry Of Labor focuses on Arstotzka's future growth.","The Ministry Of Labor focuses on the Keep's future growth."
 "end:family-dead","Workers are expected to support large healthy families.","Workers are expected to support large healthy families."
 "end:family-dead","Your position will be filled by someone more appropriate.","Your position will be filled by someone more appropriate."
-"end:family-dead","Glory to Arstotzka.","Glory to Arstotzka."
+"end:family-dead","Glory to Arstotzka.","Glory to the Keep."
 "end:turned-over-ezic-docs","You are under arrest for associating with suspicious groups.","You are under arrest for associating with suspicious groups."
 "end:turned-over-ezic-docs","The Ministry of Information will perform a full audit of your recent activities.","The Ministry of Information will perform a full audit of your recent activities."
-"end:turned-over-ezic-docs","Glory to Arstotzka.","Glory to Arstotzka."
+"end:turned-over-ezic-docs","Glory to Arstotzka.","Glory to the Keep."
 "end:caught-with-ezic-money","The Ministry of Income has discovered an anomaly in your earnings.","The Ministry of Income has discovered an anomaly in your earnings."
 "end:caught-with-ezic-money","You are under arrest pending a full audit of your recent activities.","You are under arrest pending a full audit of your recent activities."
 "end:caught-with-ezic-money","Your family will likewise be held for questioning.","Your family will likewise be held for questioning."
 "end:caught-with-ezic-money","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:caught-with-ezic-money","Glory to Arstotzka.","Glory to Arstotzka."
+"end:caught-with-ezic-money","Glory to Arstotzka.","Glory to the Keep."
 "end:killed-innocent","You are under arrest for the murder of an innocent.","You are under arrest for the murder of an innocent."
 "end:killed-innocent","The penalty is death.","The penalty is death."
 "end:killed-innocent","Your family will be questioned about their involvement.","Your family will be questioned about their involvement."
 "end:killed-innocent","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:killed-innocent","Glory to Arstotzka.","Glory to Arstotzka."
+"end:killed-innocent","Glory to Arstotzka.","Glory to the Keep."
 "end:tranqed-innocent","You are under arrest for attacking an innocent.","You are under arrest for attacking an innocent."
 "end:tranqed-innocent","The penalty is forced labor.","The penalty is forced labor."
 "end:tranqed-innocent","Your family will be questioned about their involvement.","Your family will be questioned about their involvement."
 "end:tranqed-innocent","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:tranqed-innocent","Glory to Arstotzka.","Glory to Arstotzka."
-"end:killed-guard","You are under arrest for the murder of an Arstotzkan official.","You are under arrest for the murder of an Arstotzkan official."
+"end:tranqed-innocent","Glory to Arstotzka.","Glory to the Keep."
+"end:killed-guard","You are under arrest for the murder of an Arstotzkan official.","You are under arrest for the murder of a Rustler official."
 "end:killed-guard","The penalty is death.","The penalty is death."
 "end:killed-guard","Your family will be questioned about their involvement.","Your family will be questioned about their involvement."
 "end:killed-guard","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:killed-guard","Glory to Arstotzka.","Glory to Arstotzka."
-"end:tranqed-guard","You are under arrest for attacking an Arstotzkan official.","You are under arrest for attacking an Arstotzkan official."
+"end:killed-guard","Glory to Arstotzka.","Glory to the Keep."
+"end:tranqed-guard","You are under arrest for attacking an Arstotzkan official.","You are under arrest for attacking a Rustler official."
 "end:tranqed-guard","The penalty is death.","The penalty is death."
 "end:tranqed-guard","Your family will be questioned about their involvement.","Your family will be questioned about their involvement."
 "end:tranqed-guard","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:tranqed-guard","Glory to Arstotzka.","Glory to Arstotzka."
+"end:tranqed-guard","Glory to Arstotzka.","Glory to the Keep."
 "end:killed-target","You are under arrest for the murder of an innocent.","You are under arrest for the murder of an innocent."
 "end:killed-target","The penalty is death.","The penalty is death."
 "end:killed-target","Your family will be questioned about their involvement.","Your family will be questioned about their involvement."
 "end:killed-target","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:killed-target","Glory to Arstotzka.","Glory to Arstotzka."
+"end:killed-target","Glory to Arstotzka.","Glory to the Keep."
 "end:killed-target","[A note appears from under the cell door]","[A note appears from under the cell door]"
 "end:killed-target","INSPECTOR - FAMILY IS SAFE - TARGET ELIMINATED BUT OTHER PROBLEMS ARISE","INSPECTOR - FAMILY IS SAFE - TARGET ELIMINATED BUT OTHER PROBLEMS ARISE"
 "end:killed-target","REPLACEMENT INSPECTOR NOT COOPERATIVE - EZIC ACTIVITIES HINDERED","REPLACEMENT INSPECTOR NOT COOPERATIVE - EZIC ACTIVITIES HINDERED"
@@ -1400,7 +1415,7 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "end:tranqed-target","The penalty is forced labor.","The penalty is forced labor."
 "end:tranqed-target","Your family will be questioned about their involvement.","Your family will be questioned about their involvement."
 "end:tranqed-target","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:tranqed-target","Glory to Arstotzka.","Glory to Arstotzka."
+"end:tranqed-target","Glory to Arstotzka.","Glory to the Keep."
 "end:tranqed-target","[A note appears from under the cell door]","[A note appears from under the cell door]"
 "end:tranqed-target","INSPECTOR - FAMILY IS SAFE - TARGET HAS RECOVERED IN HOSPITAL","INSPECTOR - FAMILY IS SAFE - TARGET HAS RECOVERED IN HOSPITAL"
 "end:tranqed-target","REPLACEMENT INSPECTOR NOT COOPERATIVE - EZIC ACTIVITIES HINDERED","REPLACEMENT INSPECTOR NOT COOPERATIVE - EZIC ACTIVITIES HINDERED"
@@ -1410,28 +1425,28 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "end:stuff-on-walls","The penalty is forced labor.","The penalty is forced labor."
 "end:stuff-on-walls","Your family will be sent back to their village.","Your family will be sent back to their village."
 "end:stuff-on-walls","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:stuff-on-walls","Glory to Arstotzka.","Glory to Arstotzka."
-"end:arrested-boss-buddy","Your supervisor has reported you for theft of Arstotzkan property.","Your supervisor has reported you for theft of Arstotzkan property."
+"end:stuff-on-walls","Glory to Arstotzka.","Glory to the Keep."
+"end:arrested-boss-buddy","Your supervisor has reported you for theft of Arstotzkan property.","Your supervisor has reported you for theft of Rustler property."
 "end:arrested-boss-buddy","The penalty is forced labor.","The penalty is forced labor."
 "end:arrested-boss-buddy","Your family will be sent back to their village.","Your family will be sent back to their village."
 "end:arrested-boss-buddy","The border will remain open under a replacement inspector.","The border will remain open under a replacement inspector."
-"end:arrested-boss-buddy","Glory to Arstotzka.","Glory to Arstotzka."
+"end:arrested-boss-buddy","Glory to Arstotzka.","Glory to the Keep."
 "end:wall-destroyed","The Grestin Border wall has been destroyed.","The Grestin Border wall has been destroyed."
 "end:wall-destroyed","You are under arrest for failure to defend the checkpoint.","You are under arrest for failure to defend the checkpoint."
 "end:wall-destroyed","Your family will be sent back to their village.","Your family will be sent back to their village."
 "end:wall-destroyed","The border will reopen under a replacement inspector.","The border will reopen under a replacement inspector."
-"end:wall-destroyed","Glory to Arstotzka.","Glory to Arstotzka."
+"end:wall-destroyed","Glory to Arstotzka.","Glory to the Keep."
 "end:help-ezic-kill-attackers-wall-safe","Hello inspector.","Hello inspector."
 "end:help-ezic-kill-attackers-wall-safe","We have audited your recent activities.","We have audited your recent activities."
 "end:help-ezic-kill-attackers-wall-safe","Your involvement with a group calling themselves THE ORDER OF THE EZIC STAR has been uncovered.","Your involvement with a group calling themselves THE ORDER OF THE EZIC STAR has been uncovered."
-"end:help-ezic-kill-attackers-wall-safe","Several members of this group have been arrested in Arstotzka.","Several members of this group have been arrested in Arstotzka."
+"end:help-ezic-kill-attackers-wall-safe","Several members of this group have been arrested in Arstotzka.","Several members of this group have been arrested in Rustler's Keep."
 "end:help-ezic-kill-attackers-wall-safe","At least one EZIC member has confessed to receiving your help.","At least one EZIC member has confessed to receiving your help."
 "end:help-ezic-kill-attackers-wall-safe","This represents treason of the highest order.","This represents treason of the highest order."
 "end:help-ezic-kill-attackers-wall-safe","Goodbye inspector.","Goodbye inspector."
 "end:help-ezic-kill-attackers-wall-safe","The execution is scheduled for tonight.","The execution is scheduled for tonight."
 "end:help-ezic-kill-attackers-wall-safe","Your family's safety is unknown.","Your family's safety is unknown."
 "end:help-ezic-kill-attackers-wall-safe","EZIC has been crushed. The balance of justice is restored.","EZIC has been crushed. The balance of justice is restored."
-"end:help-ezic-kill-attackers-wall-safe","Glory to Arstotzka.","Glory to Arstotzka."
+"end:help-ezic-kill-attackers-wall-safe","Glory to Arstotzka.","Glory to the Keep."
 "end:help-ezic-kill-attackers-wall-safe","[A note appears from under the cell door]","[A note appears from under the cell door]"
 "end:help-ezic-kill-attackers-wall-safe","INSPECTOR - YOU HAVE BETRAYED US AT THE LAST MOMENT","INSPECTOR - YOU HAVE BETRAYED US AT THE LAST MOMENT"
 "end:help-ezic-kill-attackers-wall-safe","THIS CHAPTER OF EZIC IS OVER - WE CAN OFFER NO HELP TO YOUR FAMILY","THIS CHAPTER OF EZIC IS OVER - WE CAN OFFER NO HELP TO YOUR FAMILY"
@@ -1441,18 +1456,18 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "end:help-ezic-kill-attackers-wall-destroyed","Your betrayal means you have chosen the wrong side.","Your betrayal means you have chosen the wrong side."
 "end:help-ezic-kill-attackers-wall-destroyed","There is no place for you or your family in this revolution.","There is no place for you or your family in this revolution."
 "end:help-ezic-kill-attackers-wall-destroyed","Goodbye inspector.","Goodbye inspector."
-"end:help-ezic-kill-attackers-wall-destroyed","Glory to the New Arstotzka.","Glory to the New Arstotzka."
+"end:help-ezic-kill-attackers-wall-destroyed","Glory to the New Arstotzka.","Glory to the New Rustler's Keep."
 "end:help-few-ezic","Hello inspector.","Hello inspector."
 "end:help-few-ezic","We have audited your recent activities.","We have audited your recent activities."
 "end:help-few-ezic","Your involvement with a group calling themselves THE ORDER OF THE EZIC STAR has been uncovered.","Your involvement with a group calling themselves THE ORDER OF THE EZIC STAR has been uncovered."
-"end:help-few-ezic","Several members of this group have been arrested in Arstotzka.","Several members of this group have been arrested in Arstotzka."
+"end:help-few-ezic","Several members of this group have been arrested in Arstotzka.","Several members of this group have been arrested in Rustler's Keep."
 "end:help-few-ezic","At least one EZIC member has confessed to receiving your help.","At least one EZIC member has confessed to receiving your help."
 "end:help-few-ezic","This represents treason of the highest order.","This represents treason of the highest order."
 "end:help-few-ezic","Goodbye inspector.","Goodbye inspector."
 "end:help-few-ezic","The execution is scheduled for tonight.","The execution is scheduled for tonight."
 "end:help-few-ezic","Your family's safety is unknown.","Your family's safety is unknown."
 "end:help-few-ezic","EZIC has been crushed. The balance of justice is restored.","EZIC has been crushed. The balance of justice is restored."
-"end:help-few-ezic","Glory to Arstotzka.","Glory to Arstotzka."
+"end:help-few-ezic","Glory to Arstotzka.","Glory to the Keep."
 "end:escape","You board the late train to the Northern Territories. It is nearly empty.","You board the late train to the Northern Territories. It is nearly empty."
 "end:escape","You pay for the hastily forged passport and re-entry ticket. They look terrible.","You pay for the hastily forged passport and re-entry ticket. They look terrible."
 "end:escape","You pay for the hastily forged passports and re-entry tickets. They look terrible.","You pay for the hastily forged passports and re-entry tickets. They look terrible."
@@ -1475,14 +1490,14 @@ Continue to confiscate all Arstotzkan passports from native entrants."
 "end:help-ezic-hold-fire","We are moving you and your family to a better home.","We are moving you and your family to a better home."
 "end:help-ezic-hold-fire","Your services as an inspector are no longer required. We need agents.","Your services as an inspector are no longer required. We need agents."
 "end:help-ezic-hold-fire","Follow us and together we will complete the revolution!","Follow us and together we will complete the revolution!"
-"end:help-ezic-hold-fire","Glory to the New Arstotzka.","Glory to the New Arstotzka."
+"end:help-ezic-hold-fire","Glory to the New Arstotzka.","Glory to the New Rustler's Keep."
 "end:ignore-ezic","Hello inspector.","Hello inspector."
 "end:ignore-ezic","We have audited your activities for the past 20 years.","We have audited your activities for the past 20 years."
 "end:ignore-ezic","There are some anomalies.","There are some anomalies."
-"end:ignore-ezic","But you have served Arstotzka well.","But you have served Arstotzka well."
+"end:ignore-ezic","But you have served Arstotzka well.","But you have served the Keep well."
 "end:ignore-ezic","We will overlook these small transgressions.","We will overlook these small transgressions."
 "end:ignore-ezic","You have been cleared of any suspicion.","You have been cleared of any suspicion."
-"end:ignore-ezic","Glory to Arstotzka.","Glory to Arstotzka."
+"end:ignore-ezic","Glory to Arstotzka.","Glory to the Keep."
 "end:ignore-ezic","A new agreement has been reached with Kolechia.","A new agreement has been reached with Kolechia."
 "end:ignore-ezic","Grestin Border Checkpoint will reopen soon.","Grestin Border Checkpoint will reopen soon."
 "end:ignore-ezic","Return to your post on January 1st.","Return to your post on January 1st."
@@ -1528,6 +1543,7 @@ Process travelers until your balance drops below zero. Citations penalize an esc
 "night:FAMILY_PICTURE","Your wife found an old family picture.","Your wife found an old family picture."
 "night:BUY_UPGRADE0","Booth Upgrade Available: SPACE key to toggle INSPECT mode.","Booth Upgrade Available: SPACE key to toggle INSPECT mode."
 "night:BUY_UPGRADE0","UPGRADE BOOTH","UPGRADE BOOTH"
+"night:BUY_UPGRADE0","Booth Upgrade Available: Multitouch.","Booth Upgrade Available: Multitouch."
 "night:BUY_UPGRADE1","Booth Upgrade Available: TAB key to toggle stamp bar.","Booth Upgrade Available: TAB key to toggle stamp bar."
 "night:BUY_UPGRADE1","UPGRADE BOOTH","UPGRADE BOOTH"
 "night:BUY_UPGRADE2","Booth Upgrade Available: Rulebook shortcuts.","Booth Upgrade Available: Rulebook shortcuts."
@@ -1593,11 +1609,11 @@ WAR HAS MADE GOV'T GREEDY AND PARANOID - YOU HAVE SEEN FOR YOURSELF
 HELP US FREE ARSTOTZKA FROM ITS SHACKLES
 
 
-* THE ORDER OF THE EZIC STAR","ARSTOTZKA IS GREAT COUNTRY POISONED BY CORRUPT LEADERS
+* THE ORDER OF THE EZIC STAR","THE KEEP IS GREAT COUNTRY POISONED BY CORRUPT LEADERS
 
 WAR HAS MADE GOV'T GREEDY AND PARANOID - YOU HAVE SEEN FOR YOURSELF
 
-HELP US FREE ARSTOTZKA FROM ITS SHACKLES
+HELP US FREE THE KEEP FROM ITS SHACKLES
 
 
 * THE ORDER OF THE EZIC STAR"
@@ -1637,7 +1653,7 @@ WHEN TYRANNY ENDS WE WILL DISAPPEAR AGAIN","BOTH AGENTS WERE DENIED
 
 WE CANNOT SUCCEED WITHOUT YOUR HELP
 
-WHEN ARSTOTZKA WAS BORN, THE ORDER FULFILLED SAME ROLE AS TODAY
+WHEN THE KEEP WAS BORN, THE ORDER FULFILLED SAME ROLE AS TODAY
 
 WHEN TYRANNY ENDS WE WILL DISAPPEAR AGAIN"
 "note:EZIC_HANDLER_POST1","ONLY ONE AGENT APPROVED
@@ -1650,7 +1666,7 @@ WHEN TYRANNY ENDS WE WILL DISAPPEAR AGAIN","ONLY ONE AGENT APPROVED
 
 WE CANNOT SUCCEED WITHOUT YOUR HELP
 
-WHEN ARSTOTZKA WAS BORN ,THE ORDER FULFILLED SAME ROLE AS TODAY
+WHEN THE KEEP WAS BORN, THE ORDER FULFILLED SAME ROLE AS TODAY
 
 WHEN TYRANNY ENDS WE WILL DISAPPEAR AGAIN"
 "note:EZIC_HANDLER_POST1","YOU HAVE DONE WELL
@@ -1663,7 +1679,7 @@ WHEN TYRANNY ENDS WE WILL DISAPPEAR AGAIN","YOU HAVE DONE WELL
 
 BOTH AGENTS NOW OPERATING
 
-WHEN ARSTOTZKA WAS BORN, THE ORDER FULFILLED SAME ROLE AS TODAY
+WHEN THE KEEP WAS BORN, THE ORDER FULFILLED SAME ROLE AS TODAY
 
 WHEN TYRANNY ENDS WE WILL DISAPPEAR AGAIN"
 "note:EZIC_HANDLER_EXT","BORDER ATTACKS ARE NOT EZIC OPERATIONS
@@ -1685,7 +1701,7 @@ HIS NAME IS KHALED ISTOM
 
 DO NOT FORGET","ASSASSIN COMING FROM ANTEGRIA
 
-WILL TARGET IMPORTANT EZIC AGENT IN ARSTOTZKA
+WILL TARGET IMPORTANT EZIC AGENT IN RUSTLER'S KEEP
 
 MUST BE STOPPED
 
@@ -1700,25 +1716,25 @@ IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL
 
 CANNOT TAKE CHANCES - YOU MUST KILL HIM TODAY - MAN IN RED - WE WILL PROVIDE OPPORTUNITY
 
-IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL BE SAFE"
+IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR THE KEEP - FAMILY WILL BE SAFE"
 "note:EZIC_HANDLER_SNIPE","KHALED KILLED TWO EZIC AGENTS - ANOTHER ASSASSIN COMES - MAN IN RED - CARRIES INFO ON ALL EZIC IN ARSTOTZKA
 
 CANNOT TAKE CHANCES - YOU MUST KILL HIM TODAY - WE WILL PROVIDE OPPORTUNITY
 
-IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL BE SAFE","KHALED KILLED TWO EZIC AGENTS - ANOTHER ASSASSIN COMES - MAN IN RED - CARRIES INFO ON ALL EZIC IN ARSTOTZKA
+IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL BE SAFE","KHALED KILLED TWO EZIC AGENTS - ANOTHER ASSASSIN COMES - MAN IN RED - CARRIES INFO ON ALL EZIC IN RUSTLER'S KEEP
 
 CANNOT TAKE CHANCES - YOU MUST KILL HIM TODAY - WE WILL PROVIDE OPPORTUNITY
 
-IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL BE SAFE"
+IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR THE KEEP - FAMILY WILL BE SAFE"
 "note:EZIC_HANDLER_SNIPE","KHALED DEALT WITH - ANOTHER ASSASSIN COMES - MAN IN RED - CARRIES INFO ON ALL EZIC IN ARSTOTZKA
 
 CANNOT TAKE CHANCES - YOU MUST KILL HIM TODAY - WE WILL PROVIDE OPPORTUNITY
 
-IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL BE SAFE","KHALED DEALT WITH - ANOTHER ASSASSIN COMES - MAN IN RED - CARRIES INFO ON ALL EZIC IN ARSTOTZKA
+IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL BE SAFE","KHALED DEALT WITH - ANOTHER ASSASSIN COMES - MAN IN RED - CARRIES INFO ON ALL EZIC IN RUSTLER'S KEEP
 
 CANNOT TAKE CHANCES - YOU MUST KILL HIM TODAY - WE WILL PROVIDE OPPORTUNITY
 
-IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR ARSTOTZKA - FAMILY WILL BE SAFE"
+IF SUCCEED, YOU WILL BE CAUGHT - MUST SACRIFICE SELF FOR THE KEEP - FAMILY WILL BE SAFE"
 "note:EZIC_HANDLER_POSTSNIPE","WE HAVE MISSED OUR CHANCE
 
 MAN IN RED SURVIVES
@@ -1778,11 +1794,11 @@ HOLD YOUR FIRE
 "traveler:EZIC_HANDLER_PRE0","Let them pass.","Let them pass."
 "traveler:EZIC_AGENT0","The Order rises.","The Order rises."
 "traveler:EZIC_AGENT0","The Order knows.","The Order knows."
-"traveler:EZIC_AGENT1","For Arstotzka and the Order.","For Arstotzka and the Order."
+"traveler:EZIC_AGENT1","For Arstotzka and the Order.","For the Keep and the Order."
 "traveler:EZIC_HANDLER_POST1","Give me the coded documents.","Give me the coded documents."
 "traveler:EZIC_HANDLER_POST1","Both.","Both."
 "traveler:EZIC_HANDLER_EXT","Today.","Today."
-"traveler:EZIC_AGENT_EXT","For Arstotzka and the Order.","For Arstotzka and the Order."
+"traveler:EZIC_AGENT_EXT","For Arstotzka and the Order.","For the Keep and the Order."
 "traveler:EZIC_AGENT_EXT","The others do not agree, but I believe the man in red is not a threat.","The others do not agree, but I believe the man in red is not a threat."
 "traveler:EZIC_AGENT_EXT","@What?","@What?"
 "traveler:EZIC_AGENT_EXT","Nevermind.","Nevermind."
@@ -1801,7 +1817,7 @@ HOLD YOUR FIRE
 "traveler:EZIC_DIPLO_FOLLOW","Just need to shave my mustache.","Just need to shave my mustache."
 "traveler:EZIC_DIPLO_FOLLOW","But we all must make sacrifices.","But we all must make sacrifices."
 "traveler:EZIC_DIPLO_FOLLOW","Appove the visa.","Approve the visa."
-"traveler:EZIC_DIPLO_FOLLOW","For Arstotzka and the Order.","For Arstotzka and the Order."
+"traveler:EZIC_DIPLO_FOLLOW","For Arstotzka and the Order.","For the Keep and the Order."
 "traveler:EZIC_DIPLO_FOLLOW","This is not what was agreed on.","This is not what was agreed on."
 "traveler:EZIC_DIPLO_FOLLOW","I am sent to collect diplomat's passport.","I am sent to collect diplomat's passport."
 "traveler:EZIC_DIPLO_FOLLOW","@I do not have it.","@I do not have it."
@@ -1843,21 +1859,21 @@ HOLD YOUR FIRE
 "traveler:SECRET_POLICE_FINAL","There is nothing to fear.","There is nothing to fear."
 "traveler:SECRET_POLICE_FINAL","Work hard.","Work hard."
 "traveler:JORJI_BASE","All right! You the best!","All right! You the best!"
-"traveler:JORJI_BASE","Arstotzka the best!","Arstotzka the best!"
+"traveler:JORJI_BASE","Arstotzka the best!","Keep the best!"
 "traveler:JORJI_BASE","Here, take this!","Here, take this!"
 "traveler:JORJI0","Ok! Here we go!","Ok! Here we go!"
-"traveler:JORJI0","Glory to Arstotzka!","Glory to Arstotzka!"
+"traveler:JORJI0","Glory to Arstotzka!","Glory to the Keep!"
 "traveler:JORJI0","The greatest country!","The greatest country!"
 "traveler:JORJI0","@Where is your passport?","@Where is your passport?"
 "traveler:JORJI0","Passport!","Passport!"
-"traveler:JORJI0","Arstotzka so great, passport not required.","Arstotzka so great, passport not required."
+"traveler:JORJI0","Arstotzka so great, passport not required.","Keep so great, passport not required."
 "traveler:JORJI0","Right?","Right?"
 "traveler:JORJI0","@A passport is required.","@A passport is required."
 "traveler:JORJI0","Ok, ok. I hear you.","Ok, ok. I hear you."
 "traveler:JORJI0","I come back again.","I come back again."
 "traveler:JORJI1","Ok! Hello again!","Ok! Hello again!"
 "traveler:JORJI1","Now I have passport!","Now I have passport!"
-"traveler:JORJI1","Arstotzka still best country for sure!","Arstotzka still best country for sure!"
+"traveler:JORJI1","Arstotzka still best country for sure!","Keep still best country for sure!"
 "traveler:JORJI1","@This passport is crude fake.","@This passport is crude fake."
 "traveler:JORJI1","Hey now! Is not true!","Hey now! Is not true!"
 "traveler:JORJI1","Is pre-approved!","Is pre-approved!"
@@ -1883,7 +1899,7 @@ HOLD YOUR FIRE
 "traveler:JORJI3","You check again maybe.","You check again maybe."
 "traveler:JORJI3","@Do not come back again.","@Do not come back again."
 "traveler:JORJI3","Haha!","Haha!"
-"traveler:JORJI3","You nice guy but I have business in Arstotzka.","You nice guy but I have business in Arstotzka."
+"traveler:JORJI3","You nice guy but I have business in Arstotzka.","You nice guy but I have business in Keep."
 "traveler:JORJI3","I get right papers and come see you.","I get right papers and come see you."
 "traveler:JORJI4","Hello my guy!","Hello my guy!"
 "traveler:JORJI4","Ok. Today is day!","Ok. Today is day!"
@@ -1893,7 +1909,7 @@ HOLD YOUR FIRE
 "traveler:JORJI4","@I told you not to come back.","@I told you not to come back."
 "traveler:JORJI4","This is crap.","This is crap."
 "traveler:JORJI4","You know what? Forget it.","You know what? Forget it."
-"traveler:JORJI4","Arstotzka worst country.","Arstotzka worst country."
+"traveler:JORJI4","Arstotzka worst country.","Keep worst country."
 "traveler:JORJI4","You worst person.","You worst person."
 "traveler:JORJI4","Thank you so much!","Thank you so much!"
 "traveler:JORJI4","If I am honest to you, I was little nervous.","If I am honest to you, I was little nervous."
@@ -1976,7 +1992,7 @@ HOLD YOUR FIRE
 "traveler:JORJI_CRIMINAL","I rather sell drugs!","I rather sell drugs!"
 "traveler:JORJI_PASSPORTS","I read newspaper.","I read newspaper."
 "traveler:JORJI_PASSPORTS","@Hello Jorji.","@Hello Jorji."
-"traveler:JORJI_PASSPORTS","Things getting little crazy in Arstotzka.","Things getting little crazy in Arstotzka."
+"traveler:JORJI_PASSPORTS","Things getting little crazy in Arstotzka.","Things getting little crazy in Keep."
 "traveler:JORJI_PASSPORTS","Maybe you think about going away for a bit.","Maybe you think about going away for a bit."
 "traveler:JORJI_PASSPORTS","Obristan is good place.","Obristan is good place."
 "traveler:JORJI_PASSPORTS","Right next door up north.","Right next door up north."
@@ -2105,7 +2121,7 @@ HOLD YOUR FIRE
 "traveler:FRIENDLY_GUARD1","My aim is not like before.","My aim is not like before."
 "traveler:FRIENDLY_GUARD2","There is more action at this checkpoint than in the war.","There is more action at this checkpoint than in the war."
 "traveler:FRIENDLY_GUARD2","I fought in Kolechia for 5 years.","I fought in Kolechia for 5 years."
-"traveler:FRIENDLY_GUARD2","If you think it is bad in Arstotzka, it is ten times worse in Kolechia.","If you think it is bad in Arstotzka, it is ten times worse in Kolechia."
+"traveler:FRIENDLY_GUARD2","If you think it is bad in Arstotzka, it is ten times worse in Kolechia.","If you think it is bad in Keep, it is ten times worse in Kolechia."
 "traveler:FRIENDLY_GUARD2","I do not blame them for coming here.","I do not blame them for coming here."
 "traveler:FRIENDLY_GUARD2","Anyways, you are doing well. Keep it up.","Anyways, you are doing well. Keep it up."
 "traveler:FRIENDLY_GUARD3","Friend, how are you?","Friend, how are you?"
@@ -2220,18 +2236,18 @@ HOLD YOUR FIRE
 "traveler:PRISON_GUARD_BOMB","What a piece of shit.","What a piece of shit."
 "traveler:PRISON_GUARD_BOMB","I doubt it is even worth much.","I doubt it is even worth much."
 "traveler:PRISON_GUARD_BOMB","Call the next immigrant.","Call the next immigrant."
-"traveler:TIME_BOMBER","DEATH TO ARSTOTZKA!","DEATH TO ARSTOTZKA!"
+"traveler:TIME_BOMBER","DEATH TO ARSTOTZKA!","DEATH TO THE KEEP!"
 "traveler:BOSS_REPORTCITATIONS","You have received no citations.","You have received no citations."
 "traveler:BOSS_REPORTCITATIONS","You have received one citation.","You have received one citation."
 "traveler:BOSS_REPORTCITATIONS","You have received ${Game/NumCitations} citations.","You have received ${Game/NumCitations} citations."
 "traveler:BOSS0","So.~","So.~"
 "traveler:BOSS0","You are inspector here.~","You are inspector here.~"
 "traveler:BOSS0","That makes you my responsibility.~","That makes you my responsibility.~"
-"traveler:BOSS0","You make Arstotzka proud.~","You make Arstotzka proud.~"
+"traveler:BOSS0","You make Arstotzka proud.~","You make Keep proud.~"
 "traveler:BOSS0","Hang it on wall here.","Hang it on wall here."
 "traveler:BOSS0","I return in 10 days.~","I return in 10 days.~"
 "traveler:BOSS0","Maintain your diligence.","Maintain your diligence."
-"traveler:BOSS0","Glory to Arstotzka.","Glory to Arstotzka."
+"traveler:BOSS0","Glory to Arstotzka.","Glory to the Keep."
 "traveler:BOSS0","Perhaps it was mistake to rely on lottery.","Perhaps it was mistake to rely on lottery."
 "traveler:BOSS0","Let this motivate you.~","Let this motivate you.~"
 "traveler:BOSS0","Do not embarrass me.","Do not embarrass me."
@@ -2258,7 +2274,7 @@ HOLD YOUR FIRE
 "traveler:BOSS1","Approve her entry.","Approve her entry."
 "traveler:BOSS1","She is Shae Piersovska.~","She is Shae Piersovska.~"
 "traveler:BOSS1","I do not want to hear of any trouble to her.","I do not want to hear of any trouble to her."
-"traveler:BOSS1","Glory to Arstotzka.","Glory to Arstotzka."
+"traveler:BOSS1","Glory to Arstotzka.","Glory to the Keep."
 "traveler:BOSS2","You little bastard.~","You little bastard.~"
 "traveler:BOSS2","Shae thinks I am powerless fool now.","Shae thinks I am powerless fool now."
 "traveler:BOSS2","It was made very clear to let her through.","It was made very clear to let her through."
@@ -2282,7 +2298,7 @@ HOLD YOUR FIRE
 "traveler:BOSS_BUDDY","Said I would get through.","Said I would get through."
 "traveler:BOSS_BUDDY","But I guess he is not so much in control.","But I guess he is not so much in control."
 "traveler:BOSS_BUDDY","I hope Dimitri tires more easily now.","I hope Dimitri tires more easily now."
-"traveler:BOSS_BUDDY","I do not want to stay long in Arstotzka.","I do not want to stay long in Arstotzka."
+"traveler:BOSS_BUDDY","I do not want to stay long in Arstotzka.","I do not want to stay long in Keep."
 "traveler:BOSS_BUDDY","Ah, I would not do that.","Ah, I would not do that."
 "traveler:BOSS_BUDDY","Dimitri is not forgiving person.","Dimitri is not forgiving person."
 "traveler:BOSS_BUDDY","I am no fool.","I am no fool."
@@ -2335,10 +2351,10 @@ HOLD YOUR FIRE
 "traveler:RESISTER","I refuse!","I refuse!"
 "traveler:RESISTER","You fools better to not touch me.","You fools better to not touch me."
 "traveler:RESISTER","I will explode like wild tiger.","I will explode like wild tiger."
-"traveler:RESISTER","I have every right to enter Arstotzka.","I have every right to enter Arstotzka."
+"traveler:RESISTER","I have every right to enter Arstotzka.","I have every right to enter Keep."
 "traveler:RESISTER","You think I am joking but tiger does not joke.","You think I am joking but tiger does not joke."
 "traveler:RESISTER","Let me through!","Let me through!"
-"traveler:JOURNALIST_FIRST","I write report on conditions in Arstotzka.","I write report on conditions in Arstotzka."
+"traveler:JOURNALIST_FIRST","I write report on conditions in Arstotzka.","I write report on conditions in Keep."
 "traveler:JOURNALIST_FIRST","As long as it takes.","As long as it takes."
 "traveler:JOURNALIST_FIRST","@You are missing required papers.","@You are missing required papers."
 "traveler:JOURNALIST_FIRST","I am journalist.","I am journalist."
@@ -2350,7 +2366,7 @@ HOLD YOUR FIRE
 "traveler:JOURNALIST_FIRST","I will not lay down for your corrupt abuses.","I will not lay down for your corrupt abuses."
 "traveler:JOURNALIST_FIRST","Expect to read about this!","Expect to read about this!"
 "traveler:JOURNALIST_FIRST","You are slowest inspector I have ever seen.","You are slowest inspector I have ever seen."
-"traveler:JOURNALIST_FIRST","No wonder Arstotzka is screwed.","No wonder Arstotzka is screwed."
+"traveler:JOURNALIST_FIRST","No wonder Arstotzka is screwed.","No wonder Keep is screwed."
 "traveler:JOURNALIST","I cover big story.","I cover big story."
 "traveler:JOURNALIST","I cannot say.","I cannot say."
 "traveler:JOURNALIST","Maybe few days, maybe few weeks.","Maybe few days, maybe few weeks."
@@ -2379,7 +2395,7 @@ HOLD YOUR FIRE
 "traveler:WATCH_GIVER0","All for green stamp.","All for green stamp."
 "traveler:WATCH_GIVER0","@You are missing some papers.","@You are missing some papers."
 "traveler:WATCH_GIVER0","Yes I told you this.","Yes I told you this."
-"traveler:WATCH_GIVER0","Arstotzkan bastard.","Arstotzkan bastard."
+"traveler:WATCH_GIVER0","Arstotzkan bastard.","Rustler bastard."
 "traveler:WATCH_GIVER0","I am telling to you.","I am telling to you."
 "traveler:WATCH_GIVER0","Keep watch as promise.","Keep watch as promise."
 "traveler:WATCH_GIVER0","I get it back in few days.","I get it back in few days."
@@ -2431,7 +2447,7 @@ HOLD YOUR FIRE
 "traveler:WATCH_GIVER1","Scratch was there before actually.","Scratch was there before actually."
 "traveler:WATCH_GIVER1","Thank you.","Thank you."
 "traveler:WATCH_GIVER1","Now please give watch back.","Now please give watch back."
-"traveler:WATCH_GIVER1","I start to think maybe all Arstotzkans are not so bad.","I start to think maybe all Arstotzkans are not so bad."
+"traveler:WATCH_GIVER1","I start to think maybe all Arstotzkans are not so bad.","I start to think maybe all Rustlers are not so bad."
 "traveler:WATCH_GIVER1","Ah forget it.","Ah forget it."
 "traveler:WATCH_GIVER1","You keep money.","You keep money."
 "traveler:WATCH_GIVER1","But all papers are good!","But all papers are good!"
@@ -2456,14 +2472,14 @@ HOLD YOUR FIRE
 "traveler:WATCH_GIVER1","Put trust in you!","Put trust in you!"
 "traveler:WATCH_GIVER1","Watch was gift from cousin.","Watch was gift from cousin."
 "traveler:WATCH_GIVER1","I hope you got good money for it.","I hope you got good money for it."
-"traveler:WATCH_GIVER1","Damn Arstotzkan crook.","Damn Arstotzkan crook."
+"traveler:WATCH_GIVER1","Damn Arstotzkan crook.","Damn Rustler crook."
 "traveler:ARSKICKER0","Hey man.","Hey man."
 "traveler:ARSKICKER0","I lost id card.","I lost id card."
 "traveler:ARSKICKER0","I think someone stole it from locker room.","I think someone stole it from locker room."
 "traveler:ARSKICKER0","But we won match!","But we won match!"
 "traveler:ARSKICKER0","Can't wait to get home.~","Can't wait to get home.~"
 "traveler:ARSKICKER0","I have carried this for years, maybe you take it.","I have carried this for years, maybe you take it."
-"traveler:ARSKICKER0","@Your Arstotzkan id card is missing.","@Your Arstotzkan id card is missing."
+"traveler:ARSKICKER0","@Your Arstotzkan id card is missing.","@Your Rustler id card is missing."
 "traveler:ARSKICKER0","I know man. I told you.","I know man. I told you."
 "traveler:ARSKICKER0","It was stolen.","It was stolen."
 "traveler:ARSKICKER0","C'mon let me through.","C'mon let me through."
@@ -2536,7 +2552,7 @@ HOLD YOUR FIRE
 "traveler:RED_STAMP","Give me red stamp.","Give me red stamp."
 "traveler:RED_STAMP","I am serious.","I am serious."
 "traveler:RED_STAMP","I have better job offer in Impor.","I have better job offer in Impor."
-"traveler:RED_STAMP","Red stamp and I can break contract in Arstotzka.","Red stamp and I can break contract in Arstotzka."
+"traveler:RED_STAMP","Red stamp and I can break contract in Arstotzka.","Red stamp and I can break contract in Keep."
 "traveler:RED_STAMP","10 credits for you.","10 credits for you."
 "traveler:RED_STAMP","Damn it.","Damn it."
 "traveler:RED_STAMP","I am sure you deny people all day.","I am sure you deny people all day."
@@ -2549,7 +2565,7 @@ HOLD YOUR FIRE
 "traveler:NEED_SURGERY","Please.","Please."
 "traveler:NEED_SURGERY","Surgery I need is outlawed in Kolechia.","Surgery I need is outlawed in Kolechia."
 "traveler:NEED_SURGERY","Even so, I do not trust doctors there.","Even so, I do not trust doctors there."
-"traveler:NEED_SURGERY","Only Arstotzka have skilled surgeons.","Only Arstotzka have skilled surgeons."
+"traveler:NEED_SURGERY","Only Arstotzka have skilled surgeons.","Only Keep have skilled surgeons."
 "traveler:NEED_SURGERY","@You do not have the right documents.","@You do not have the right documents."
 "traveler:NEED_SURGERY","Yes.","Yes."
 "traveler:NEED_SURGERY","They will not give papers for surgery.","They will not give papers for surgery."
@@ -2629,7 +2645,7 @@ HOLD YOUR FIRE
 "traveler:SEARCH_BRIBE_INTRO","Why you turn down good money?","Why you turn down good money?"
 "traveler:SEARCH_BRIBE_INTRO","@You are lucky to escape arrest.","@You are lucky to escape arrest."
 "traveler:SEARCH_BRIBE_INTRO","@Do not come back.","@Do not come back."
-"traveler:SEARCH_BRIBE_INTRO","@You cannot bribe an officer of Arstotzka.","@You cannot bribe an officer of Arstotzka."
+"traveler:SEARCH_BRIBE_INTRO","@You cannot bribe an officer of Arstotzka.","@You cannot bribe an officer of the Keep."
 "traveler:SEARCH_BRIBE_INTRO","They must pay well for such obedience, dog.","They must pay well for such obedience, dog."
 "traveler:TWO_PASSPORTS","Shit!","Shit!"
 "traveler:TWO_PASSPORTS","I make small mistake.","I make small mistake."
@@ -2642,7 +2658,7 @@ HOLD YOUR FIRE
 "traveler:TWO_PASSPORTS","Last one please.","Last one please."
 "traveler:IDSUPPLEMENT_COMPLAIN","This id supplement is total pain.","This id supplement is total pain."
 "traveler:IDSUPPLEMENT_COMPLAIN","Was not easy to get and only lasts few days.","Was not easy to get and only lasts few days."
-"traveler:IDSUPPLEMENT_COMPLAIN","You Arstotzkans just make it harder and harder.","You Arstotzkans just make it harder and harder."
+"traveler:IDSUPPLEMENT_COMPLAIN","You Arstotzkans just make it harder and harder.","You Rustlers just make it harder and harder."
 "traveler:IDSUPPLEMENT_COMPLAIN","Why even have open border?","Why even have open border?"
 "traveler:IDSUPPLEMENT_COMPLAIN","Bah.","Bah."
 "traveler:IDSUPPLEMENT_COMPLAIN","Would be better to spend money on bribe.","Would be better to spend money on bribe."
@@ -2659,12 +2675,12 @@ HOLD YOUR FIRE
 "traveler:DENIAL_REASON_FIRST","Screw you anyways.","Screw you anyways."
 "traveler:NO_IMPORIANS_FIRST","@Imporians are prohibited from entering.","@Imporians are prohibited from entering."
 "traveler:NO_IMPORIANS_DAY","@Imporians are prohibited from entering.","@Imporians are prohibited from entering."
-"traveler:NO_UNITEDFED_FIRST","@Do not bring your sickness to Arstotzka.","@Do not bring your sickness to Arstotzka."
+"traveler:NO_UNITEDFED_FIRST","@Do not bring your sickness to Arstotzka.","@Do not bring your sickness to the Keep."
 "traveler:NO_UNITEDFED_FIRST","What?","What?"
 "traveler:NO_UNITEDFED_FIRST","I am perfectly healthy.","I am perfectly healthy."
 "traveler:NO_UNITEDFED_FIRST","It is so easy to deny entry.","It is so easy to deny entry."
 "traveler:NO_UNITEDFED_FIRST","All this paperwork is wasted.","All this paperwork is wasted."
-"traveler:NO_UNITEDFED","@Do not bring your sickness to Arstotzka.","@Do not bring your sickness to Arstotzka."
+"traveler:NO_UNITEDFED","@Do not bring your sickness to Arstotzka.","@Do not bring your sickness to the Keep."
 "traveler:NO_UNITEDFED","What?","What?"
 "traveler:NO_UNITEDFED","I am perfectly healthy.","I am perfectly healthy."
 "traveler:NO_UNITEDFED","It is so easy to deny entry.","It is so easy to deny entry."
@@ -2682,14 +2698,14 @@ HOLD YOUR FIRE
 "traveler:CONFISCATION_DISTRICT_FIRST","What am I supposed to do?","What am I supposed to do?"
 "traveler:CONFISCATION_DISTRICT_FIRST","@Contact number on slip.","@Contact number on slip."
 "traveler:CONFISCATION_DISTRICT_FIRST","You cannot do this to me!","You cannot do this to me!"
-"traveler:CONFISCATION_DISTRICT_FIRST","I am Arstotzkan citizen.","I am Arstotzkan citizen."
+"traveler:CONFISCATION_DISTRICT_FIRST","I am Arstotzkan citizen.","I am Keep citizen."
 "traveler:CONFISCATION_DISTRICT_FIRST","I have right to travel freely.","I have right to travel freely."
 "traveler:WHISTLEBLOWER","Thank you.","Thank you."
 "traveler:WHISTLEBLOWER","I hope that things are better here.","I hope that things are better here."
 "traveler:WHISTLEBLOWER","What? I was promised asylum here.","What? I was promised asylum here."
 "traveler:WHISTLEBLOWER","I have nowhere else to go.","I have nowhere else to go."
 "traveler:WHISTLEBLOWER","@This is not my problem.","@This is not my problem."
-"traveler:ACCESSPERMIT_FIRST","You Arstotzkans keep changing rules here.","You Arstotzkans keep changing rules here."
+"traveler:ACCESSPERMIT_FIRST","You Arstotzkans keep changing rules here.","You Rustlers keep changing rules here."
 "traveler:ACCESSPERMIT_FIRST","My sister came through last week with different documents.","My sister came through last week with different documents."
 "traveler:ACCESSPERMIT_FIRST","Now I need new access permit.","Now I need new access permit."
 "traveler:ACCESSPERMIT_FIRST","Costs twice as much as before.","Costs twice as much as before."
@@ -2762,7 +2778,7 @@ HOLD YOUR FIRE
 "speech:state-purpose","I pass through.","I pass through."
 "speech:state-purpose","Transit through the country.","Transit through the country."
 "speech:state-purpose","I am transiting to elsewhere.","I am transiting to elsewhere."
-"speech:state-purpose","Transit through Arstotzka.","Transit through Arstotzka."
+"speech:state-purpose","Transit through Arstotzka.","Transit through Keep."
 "speech:state-purpose","Passing through.","Passing through."
 "speech:state-purpose","I am in transit.","I am in transit."
 "speech:state-purpose","Work.","Work."
@@ -2770,7 +2786,7 @@ HOLD YOUR FIRE
 "speech:state-purpose","I have job here.","I have job here."
 "speech:state-purpose","I plan to work.","I plan to work."
 "speech:state-purpose","Immigrating.","Immigrating."
-"speech:state-purpose","I am immigrating to Arstotzka.","I am immigrating to Arstotzka."
+"speech:state-purpose","I am immigrating to Arstotzka.","I am immigrating to Keep."
 "speech:state-purpose","I will move here.","I will move here."
 "speech:state-purpose","I am coming to live with my husband.","I am coming to live with my husband."
 "speech:state-purpose","I am coming to live with my wife.","I am coming to live with my wife."
@@ -2916,16 +2932,16 @@ HOLD YOUR FIRE
 "speech:wrong-gender","As the document says.","As the document says."
 "speech:wrong-gender","What is this question?","What is this question?"
 "speech:ask-wrong-gender-busted","There is a problem with your documentation.","There is a problem with your documentation."
-"speech:ask-approved","Glory to Arstotzka.","Glory to Arstotzka."
+"speech:ask-approved","Glory to Arstotzka.","Glory to the Keep."
 "speech:ask-approved","Cause no trouble.","Cause no trouble."
 "speech:ask-nativesonly","Try again.","Try again."
-"speech:ask-nativesonly","Arstotzkans only.","Arstotzkans only."
+"speech:ask-nativesonly","Arstotzkans only.","Rustlers only."
 "speech:ask-wrong-nation","No entry from Obristan.","No entry from Obristan."
 "speech:ask-wrong-nation","No entry from Kolechia.","No entry from Kolechia."
 "speech:ask-wrong-nation","No entry from United Federation.","No entry from United Federation."
 "speech:ask-wrong-nation","No entry from Antegria.","No entry from Antegria."
 "speech:ask-wrong-nation","No entry from Republia.","No entry from Republia."
-"speech:ask-wrong-nation","No entry from Arstotzka.","No entry from Arstotzka."
+"speech:ask-wrong-nation","No entry from Arstotzka.","No entry from Rustler's Keep."
 "speech:ask-wrong-nation","No entry from Impor.","No entry from Impor."
 "speech:ask-search","Face the scanner.","Face the scanner."
 "speech:ask-search","Turn towards the scanner.","Turn towards the scanner."
@@ -2988,9 +3004,9 @@ HOLD YOUR FIRE
 "speech:hidden-paper","Here.","Here."
 "speech:ask-wrong-thumbprint","Your thumb print does not match.","Your thumb print does not match."
 "speech:ask-wrong-thumbprint","This print does not match.","This print does not match."
-"speech:ask-wrong-diploaccess","Your diplomatic authorization does not cover Arstotzka.","Your diplomatic authorization does not cover Arstotzka."
+"speech:ask-wrong-diploaccess","Your diplomatic authorization does not cover Arstotzka.","Your diplomatic authorization does not cover Rustler's Keep."
 "speech:ask-wrong-diploaccess","You have no diplomatic rights here.","You have no diplomatic rights here."
-"speech:ask-wrong-diploaccess","This authorization does not include Arstotzka.","This authorization does not include Arstotzka."
+"speech:ask-wrong-diploaccess","This authorization does not include Arstotzka.","This authorization does not include Rustler's Keep."
 "speech:wrong-diploaccess","Nonsense.","Nonsense."
 "speech:wrong-diploaccess","Check with your superiors.","Check with your superiors."
 "speech:wrong-diploaccess","I have full authorization.","I have full authorization."
@@ -3147,3 +3163,4 @@ HOLD YOUR FIRE
 "face:F43","Long Hair","Long Hair"
 "face:F43","Shaved Head","Shaved Head"
 "face:F43","No Glasses","No Glasses"
+"font-stylesheet-override","css/fonts.css","css/fonts.css"

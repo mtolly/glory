@@ -15,7 +15,7 @@
 <item id="border_comeback"><t>COME BACK AT 6AM TOMORROW</t></item>
 <item id="border_announce0"><t>ENTRY IS NOT GUARANTEED</t></item>
 <item id="border_announce1"><t>HAVE YOUR DOCUMENTS READY</t></item>
-<item id="border_announce2"><t>ARSTOTZKA WELCOMES YOU</t></item>
+<item id="border_announce2"><t>THE KEEP WELCOMES YOU</t></item>
 <item id="border_guardout"><t>OUT!</t></item>
 <item id="border_elisa"><t>ELISA!</t></item>
 <item id="family_son_budget"><t>SON</t></item>
@@ -213,7 +213,7 @@ $score Points</t></item>
 <item id="day_29"><t>29th</t></item>
 <item id="day_30"><t>30th</t></item>
 <item id="day_31"><t>31st</t></item>
-<item id="bulletin_default"><t>Arstotzka
+<item id="bulletin_default"><t>Rustler's Keep
 Ministry of Admission
 Official Bulletin
 
@@ -221,8 +221,8 @@ Inspector,
 
 $content
 
-Glory to Arstotzka.</t></item>
-<item id="bulletin_notice"><t>Arstotzka
+Glory to the Keep.</t></item>
+<item id="bulletin_notice"><t>Rustler's Keep
 Ministry of Admission
 Official Bulletin
 
@@ -230,8 +230,8 @@ NOTICE:
 
 $content
 
-Glory to Arstotzka.</t></item>
-<item id="bulletin_endless"><t>Arstotzka
+Glory to the Keep.</t></item>
+<item id="bulletin_endless"><t>Rustler's Keep
 Ministry of Admission
 Official Bulletin
 
@@ -239,5 +239,5 @@ $style
 
 $course
 
-Glory to Arstotzka.</t></item>
+Glory to the Keep.</t></item>
 </data>
