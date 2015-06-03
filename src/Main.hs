@@ -20,9 +20,9 @@ import qualified Data.Set as Set
 import qualified Graphics.Vty as Vty
 import System.Random.Shuffle (shuffleM)
 import Data.Time.Clock
+import Data.Fixed
 
 data Button360
-  -- buttons, from 0 to 14
   = A
   | B
   | X
@@ -34,12 +34,11 @@ data Button360
   | Start
   | Back
   | Xbox
-  | Dpad Ortho -- UDLR are 11,12,13,14
-  -- axes
-  | LTrigger -- axis 2. minBound=normal, maxBound=pressed
-  | RTrigger -- axis 5. minBound=normal, maxBound=pressed
-  | LStick Ortho -- X is axis 0, Y is 1. minBound is U/L, maxBound is D/R
-  | RStick Ortho -- X is axis 3, Y is 4. minBound is U/L, maxBound is D/R
+  | Dpad Ortho
+  | LTrigger
+  | RTrigger
+  | LStick Ortho
+  | RStick Ortho
   deriving (Eq, Ord, Show, Read)
 
 data Ortho = U | D | L | R
@@ -287,7 +286,7 @@ update sdl keys phase = case phase of
       Vty.KBS     -> \s -> take (length s - 1) s
       Vty.KChar c -> (++ [c])
       _           -> id
-    name' = take 20 $ foldl (flip ($)) (playerName phaseNewPlayer) funs
+    name' = foldl (flip ($)) (playerName phaseNewPlayer) funs
     updatedPlayer = phaseNewPlayer{ playerName = name' }
     in if
       | pressedKey Vty.KEnter ->
@@ -315,7 +314,7 @@ update sdl keys phase = case phase of
       Vty.KBS     -> \s -> take (length s - 1) s
       Vty.KChar c -> (++ [c])
       _           -> id
-    task' = take 30 $ foldl (flip ($)) phaseNewTask funs
+    task' = foldl (flip ($)) phaseNewTask funs
     in if
       | pressedKey Vty.KEnter -> Waiting{ phaseTasks = phaseTasks ++ [(task', [])], .. }
       | pressedKey Vty.KEsc   -> Waiting{..}
@@ -347,6 +346,7 @@ update sdl keys phase = case phase of
           (playerIndex, Player{..}) <- undecided
           (joy, btn) <- sdl
           guard $ joy == playerJoystick && btn == playerNo
+          guard $ not $ elem playerIndex newYes
           return playerIndex
     next $ if
       | pressedKey Vty.KEsc -> Waiting{..}
@@ -381,6 +381,7 @@ update sdl keys phase = case phase of
           (playerIndex, Player{..}) <- undecided
           (joy, btn) <- sdl
           guard $ joy == playerJoystick && btn == playerNo
+          guard $ not $ elem playerIndex $ map fst newGood
           return (playerIndex, now)
     next $ if
       | pressedKey Vty.KEsc -> Waiting{..}
@@ -435,10 +436,9 @@ draw btns phase = case phase of
       , Vty.string Vty.defAttr " for NO. Enter name"
       ]
     , Vty.string Vty.defAttr ""
-    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white)
-      $ take 20 $ playerName ++ repeat ' '
-    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white)
-      $ take 20 $ cyrillicize playerName ++ repeat ' '
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) playerName
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize playerName
+    , Vty.string Vty.defAttr "" -- reset color
     ]
   DeletePlayer{..} -> Vty.vertCat
     [ playersAndTasks
@@ -449,10 +449,9 @@ draw btns phase = case phase of
     [ playersAndTasks
     , Vty.string Vty.defAttr ""
     , Vty.string Vty.defAttr "Enter new task name"
-    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white)
-      $ take 30 $ phaseNewTask ++ repeat ' '
-    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white)
-      $ take 30 $ cyrillicize phaseNewTask ++ repeat ' '
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) phaseNewTask
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseNewTask
+    , Vty.string Vty.defAttr "" -- reset color
     ]
   DeleteTask{..} -> Vty.vertCat
     [ playersAndTasks
@@ -464,22 +463,22 @@ draw btns phase = case phase of
       remaining = phaseVoteLength - diffUTCTime phaseTimeNow phaseTimeStart
       in "Vote now! " ++ showTime remaining ++ " seconds left"
     , Vty.string Vty.defAttr ""
-    , Vty.string Vty.defAttr $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
+    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.green) $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
     , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
         Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     , Vty.string Vty.defAttr ""
-    , Vty.string Vty.defAttr $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
+    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.red) $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
     , Vty.vertCat $ flip map phasePlayersNo $ \ix ->
         Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     ]
   VoteComplete{..} -> Vty.vertCat
     [ Vty.string Vty.defAttr $ "Voting is over."
     , Vty.string Vty.defAttr ""
-    , Vty.string Vty.defAttr $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
+    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.green) $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
     , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
         Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     , Vty.string Vty.defAttr ""
-    , Vty.string Vty.defAttr $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
+    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.red) $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
     , Vty.vertCat $ flip map phasePlayersNo $ \ix ->
         Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
     ]
@@ -505,10 +504,11 @@ draw btns phase = case phase of
             []       -> playerName
           , Vty.vertCat [ Vty.string attr $ "  " ++ task | task <- tasks ]
           ]
+    , Vty.string Vty.defAttr "" -- reset color
     ] where inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
   where
     showTime :: NominalDiffTime -> String
-    showTime t = show (realToFrac t :: Double)
+    showTime t = show (realToFrac t :: Milli)
     playersAndTasks = Vty.vertCat
       [ Vty.string Vty.defAttr "Inspectors:"
       , imagePlayersTasks
@@ -516,16 +516,30 @@ draw btns phase = case phase of
       , Vty.string Vty.defAttr "Tasks:"
       , imageTasks
       ]
-    imagePlayersTasks = Vty.vertCat $ map imagePlayerTasks $ getPlayersTasks phase
-    imagePlayerTasks (b, player, tasks) = Vty.horizCat
+    imagePlayersTasks = Vty.vertCat $ zipWith imagePlayerTasks [0..] $ getPlayersTasks phase
+    imagePlayerTasks i (b, player, tasks) = Vty.horizCat
       [ Vty.string Vty.defAttr $ if b then "* " else "  "
       , Vty.vertCat
-        [ imagePlayer player
+        [ imagePlayer i player
         , Vty.pad 2 0 0 0 $ Vty.vertCat $ map (Vty.string Vty.defAttr) tasks
         ]
       ]
-    imagePlayer Player{..} = Vty.horizCat
-      [ Vty.string Vty.defAttr $ playerName ++ " (joystick " ++ show playerJoystick ++ ", "
+    imagePlayer :: Int -> Player -> Vty.Image
+    imagePlayer i Player{..} = Vty.horizCat
+      [ let nameColor = case i of
+              0 -> rgb 234 60 60
+              1 -> rgb 239 160 40
+              2 -> rgb 226 226 59
+              3 -> rgb 88 219 65
+              4 -> rgb 48 232 232
+              5 -> rgb 49 111 234
+              6 -> rgb 148 78 229
+              7 -> rgb 239 95 239
+              _ -> rgb 170 132 99
+              where rgb :: Int -> Int -> Int -> Vty.Color
+                    rgb = Vty.rgbColor
+        in Vty.string (Vty.defAttr `Vty.withForeColor` nameColor) playerName
+      , Vty.string Vty.defAttr $ " (joystick " ++ show playerJoystick ++ ", "
       , Vty.string (color playerJoystick playerYes) $ show playerYes
       , Vty.string Vty.defAttr $ " for yes, "
       , Vty.string (color playerJoystick playerNo) $ show playerNo
