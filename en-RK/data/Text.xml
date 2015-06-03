@@ -1,0 +1,243 @@
+<data><item id="language_code"><t>en-RK</t></item>
+<item id="language_name"><t>RUSTLER'S KEEP</t></item>
+<item id="language_author"><t>Sempai</t></item>
+<item id="wrap_hyphen"><t>-</t></item>
+<item id="created_by"><t>created by Lucas Pope</t></item>
+<item id="papers_please"><t>Papers, please.</t></item>
+<item id="protocol_violated"><t>Protocol Violated.</t></item>
+<item id="unauth_confiscation"><t>Unauthorized passport confiscation</t></item>
+<item id="missing_reason"><t>Denial reason not given</t></item>
+<item id="citation_warning"><t>WARNING ISSUED - NO PENALTY</t></item>
+<item id="citation_lastwarning"><t>LAST WARNING - NO PENALTY</t></item>
+<item id="citation_penalty"><t>PENALTY ASSESSED - $0 CREDITS</t></item>
+<item id="border_next"><t>NEXT!</t></item>
+<item id="border_bomber"><t>FOR KOLECHIA!</t></item>
+<item id="border_comeback"><t>COME BACK AT 6AM TOMORROW</t></item>
+<item id="border_announce0"><t>ENTRY IS NOT GUARANTEED</t></item>
+<item id="border_announce1"><t>HAVE YOUR DOCUMENTS READY</t></item>
+<item id="border_announce2"><t>ARSTOTZKA WELCOMES YOU</t></item>
+<item id="border_guardout"><t>OUT!</t></item>
+<item id="border_elisa"><t>ELISA!</t></item>
+<item id="family_son_budget"><t>SON</t></item>
+<item id="family_wife_budget"><t>WIFE</t></item>
+<item id="family_niece_budget"><t>NIECE</t></item>
+<item id="family_uncle_budget"><t>UNCLE</t></item>
+<item id="family_mil_budget"><t>MIL</t></item>
+<item id="family_son_status"><t>Son</t></item>
+<item id="family_wife_status"><t>Wife</t></item>
+<item id="family_niece_status"><t>Niece</t></item>
+<item id="family_uncle_status"><t>Uncle</t></item>
+<item id="family_mil_status"><t>Mother-in-law</t></item>
+<item id="family_son_message"><t>son</t></item>
+<item id="family_wife_message"><t>wife</t></item>
+<item id="family_niece_message"><t>niece</t></item>
+<item id="family_uncle_message"><t>uncle</t></item>
+<item id="family_mil_message"><t>mother-in-law</t></item>
+<item id="night_endof"><t>END OF</t></item>
+<item id="night_day"><t>DAY $0</t></item>
+<item id="family_verysick_1"><t>Your $0 will die without medicine.</t></item>
+<item id="family_verysick_many"><t>Very sick family members will die without medicine.</t></item>
+<item id="family_sick_1"><t>Your $0 is sick and needs medicine.</t></item>
+<item id="family_sick_many"><t>Your family needs medicine.</t></item>
+<item id="family_died_1"><t>Your $0 has died.</t></item>
+<item id="family_died_2"><t>Your $0 and $1 have died.</t></item>
+<item id="family_died_3"><t>Your $0, $1, and $2 have died.</t></item>
+<item id="family_died_4"><t>Your $0, $1, $2, and $3 have died.</t></item>
+<item id="family_died_5"><t>Your $0, $1, $2, $3, and $4 have died.</t></item>
+<item id="family_escape_with_0"><t>You leave behind everything.</t></item>
+<item id="family_escape_with_1"><t>You gather your $0 to leave for Obristan.</t></item>
+<item id="family_escape_with_2"><t>You gather your $0 and $1 to leave for Obristan.</t></item>
+<item id="family_escape_with_3"><t>You gather your $0, $1, and $2 to leave for Obristan.</t></item>
+<item id="family_escape_with_4"><t>You gather your $0, $1, $2, and $3 to leave for Obristan.</t></item>
+<item id="family_escape_with_5"><t>You gather your $0, $1, $2, $3, and $4 to leave for Obristan.</t></item>
+<item id="family_escape_without_1"><t>Your $0 prepares to return to Nirsk.</t></item>
+<item id="family_escape_without_2"><t>Your $0 and $1 prepare to return to Nirsk.</t></item>
+<item id="family_escape_without_3"><t>Your $0, $1, and $2 prepare to return to Nirsk.</t></item>
+<item id="family_escape_without_4"><t>Your $0, $1, $2, and $3 prepare to return to Nirsk.</t></item>
+<item id="family_escape_without_5"><t>Your $0, $1, $2, $3, and $4 prepare to return to Nirsk.</t></item>
+<item id="family_flee_final_0"><t>Obristan Above All</t></item>
+<item id="family_flee_final_1"><t>The safety of your $0 is unknown.</t></item>
+<item id="family_flee_final_2"><t>The safety of your $0 and $1 is unknown.</t></item>
+<item id="family_flee_final_3"><t>The safety of your $0, $1, and $2 is unknown.</t></item>
+<item id="family_flee_final_4"><t>The safety of your $0, $1, $2, and $3 is unknown.</t></item>
+<item id="family_flee_final_5"><t>The safety of your $0, $1, $2, $3, and $4 is unknown.</t></item>
+<item id="budget_savings"><t>SAVINGS</t></item>
+<item id="budget_salary"><t>SALARY ($0)</t></item>
+<item id="budget_penalties"><t>PENALTIES ($0)</t></item>
+<item id="budget_bribes"><t>BRIBES</t></item>
+<item id="budget_rent"><t>RENT</t></item>
+<item id="budget_food"><t>FOOD</t></item>
+<item id="budget_heat"><t>HEAT</t></item>
+<item id="budget_medicine"><t>MEDICINE ($0)</t></item>
+<item id="budget_sleep"><t>SLEEP</t></item>
+<item id="budget_escape"><t>ESCAPE</t></item>
+<item id="menu_back"><t>BACK</t></item>
+<item id="confirm_ok"><t>OKAY</t></item>
+<item id="confirm_cancel"><t>CANCEL</t></item>
+<item id="menu_mainmenu"><t>MAIN MENU</t></item>
+<item id="menu_resume"><t>RESUME</t></item>
+<item id="menu_quit"><t>QUIT</t></item>
+<item id="menu_done"><t>DONE</t></item>
+<item id="menu_story"><t>STORY</t></item>
+<item id="menu_endless"><t>ENDLESS</t></item>
+<item id="menu_play"><t>PLAY</t></item>
+<item id="menu_fullscreen"><t>Fullscreen</t></item>
+<item id="menu_nudity"><t>Nudity</t></item>
+<item id="menu_easy"><t>Easy Mode</t></item>
+<item id="menu_music"><t>Music</t></item>
+<item id="menu_sound"><t>Sound</t></item>
+<item id="menu_dateformat"><t>Date Format</t></item>
+<item id="menu_language"><t>Language</t></item>
+<item id="menu_easytip"><t>+ 20 credits per day</t></item>
+<item id="menu_stats"><t>STATS</t></item>
+<item id="menu_next"><t>NEXT</t></item>
+<item id="menu_walktowork"><t>WALK TO WORK</t></item>
+<item id="menu_paused"><t>PAUSED</t></item>
+<item id="menu_settings"><t>SETTINGS</t></item>
+<item id="menu_credits"><t>CREDITS</t></item>
+<item id="menu_checkforupdates"><t>CHECK FOR UPDATES</t></item>
+<item id="stats_text"><t>Played for $time
+$processed travelers processed
+$approved approved
+$denied denied
+$detained detained
+$citations citations earned
+$stamps stamps applied
+Ending $endnum of $endtotal</t></item>
+<item id="steam_noinit"><t>STEAM CONNECTION FAILED
+
+If this problem persists, re-install the Steam client.</t></item>
+<item id="steam_restartfailed"><t>STEAM RESTART FAILED
+
+If this problem persists, re-install the Steam client.</t></item>
+<item id="steam_noconnect"><t>STEAM CONNECTION FAILED
+
+The game will attempt to restart through the Steam client.</t></item>
+<item id="steam_restart"><t>RESTART</t></item>
+<item id="load_title"><t>Select day to continue or start a new game</t></item>
+<item id="load_confirm_delete_single"><t>Delete this day $0 save?
+
+There is no undo.</t></item>
+<item id="load_confirm_delete_multi"><t>Delete this save branch from day $0 to day $1?
+
+There is no undo.</t></item>
+<item id="load_delete"><t>DELETE</t></item>
+<item id="load_confirm_full"><t>Save tracks full.
+
+Continue from a right-most save or delete a save branch to free up a track.</t></item>
+<item id="load_summary"><t>Day $day
+"$news"
+
+$savings credits, $family family members,
+$tokens tokens, apartment $apt</t></item>
+<item id="load_continue"><t>CONTINUE</t></item>
+<item id="emotion_happy"><t>HAPPY</t></item>
+<item id="emotion_ok"><t>OK</t></item>
+<item id="emotion_sad"><t>SAD</t></item>
+<item id="emotion_cold"><t>COLD</t></item>
+<item id="emotion_sick"><t>SICK</t></item>
+<item id="emotion_verysick"><t>VERY SICK</t></item>
+<item id="emotion_dead"><t>DEAD</t></item>
+<item id="emotion_hungry"><t>HUNGRY</t></item>
+<item id="load_latest"><t>LATEST</t></item>
+<item id="entry_approved"><t>ENTRY GRANTED</t></item>
+<item id="entry_denied"><t>ENTRY DENIED</t></item>
+<item id="stamp_approved"><t>APPROVED</t></item>
+<item id="stamp_denied"><t>DENIED</t></item>
+<item id="stamp_reason"><t>REASON</t></item>
+<item id="booth_dragdocs"><t>DRAG DOCUMENTS HERE</t></item>
+<item id="booth_highlight"><t>HIGHLIGHT DISCREPANCIES</t></item>
+<item id="booth_discrepancy"><t>DISCREPANCY
+DETECTED</t></item>
+<item id="booth_interrogate"><t>INTERROGATE</t></item>
+<item id="booth_matching"><t>MATCHING
+DATA</t></item>
+<item id="booth_nocorrelation"><t>NO
+CORRELATION</t></item>
+<item id="booth_cleared"><t>DISCREPANCY
+CLEARED</t></item>
+<item id="env_clearforentry"><t>Applicant clear for entry</t></item>
+<item id="env_lettermale"><t>M</t></item>
+<item id="env_letterfemale"><t>F</t></item>
+<item id="env_noalias"><t>No known alias</t></item>
+<item id="env_typochars"><t>aeiou,iuy,pgq,lj,ck,bh</t></item>
+<item id="endless_complete"><t>$style
+$course
+
+$time
+$score Points</t></item>
+<item id="endless_ranked"><t>Ranked #$0</t></item>
+<item id="endless_unlock"><t>Complete story mode with your job intact to unlock endless mode</t></item>
+<item id="endless_wrongcode"><t>S O R R Y</t></item>
+<item id="date_verbose"><t>$month $day, $year</t></item>
+<item id="month_1"><t>January</t></item>
+<item id="month_2"><t>February</t></item>
+<item id="month_3"><t>March</t></item>
+<item id="month_4"><t>April</t></item>
+<item id="month_5"><t>May</t></item>
+<item id="month_6"><t>June</t></item>
+<item id="month_7"><t>July</t></item>
+<item id="month_8"><t>August</t></item>
+<item id="month_9"><t>September</t></item>
+<item id="month_10"><t>October</t></item>
+<item id="month_11"><t>November</t></item>
+<item id="month_12"><t>December</t></item>
+<item id="day_1"><t>1st</t></item>
+<item id="day_2"><t>2nd</t></item>
+<item id="day_3"><t>3rd</t></item>
+<item id="day_4"><t>4th</t></item>
+<item id="day_5"><t>5th</t></item>
+<item id="day_6"><t>6th</t></item>
+<item id="day_7"><t>7th</t></item>
+<item id="day_8"><t>8th</t></item>
+<item id="day_9"><t>9th</t></item>
+<item id="day_10"><t>10th</t></item>
+<item id="day_11"><t>11th</t></item>
+<item id="day_12"><t>12th</t></item>
+<item id="day_13"><t>13th</t></item>
+<item id="day_14"><t>14th</t></item>
+<item id="day_15"><t>15th</t></item>
+<item id="day_16"><t>16th</t></item>
+<item id="day_17"><t>17th</t></item>
+<item id="day_18"><t>18th</t></item>
+<item id="day_19"><t>19th</t></item>
+<item id="day_20"><t>20th</t></item>
+<item id="day_21"><t>21st</t></item>
+<item id="day_22"><t>22nd</t></item>
+<item id="day_23"><t>23rd</t></item>
+<item id="day_24"><t>24th</t></item>
+<item id="day_25"><t>25th</t></item>
+<item id="day_26"><t>26th</t></item>
+<item id="day_27"><t>27th</t></item>
+<item id="day_28"><t>28th</t></item>
+<item id="day_29"><t>29th</t></item>
+<item id="day_30"><t>30th</t></item>
+<item id="day_31"><t>31st</t></item>
+<item id="bulletin_default"><t>Arstotzka
+Ministry of Admission
+Official Bulletin
+
+Inspector,
+
+$content
+
+Glory to Arstotzka.</t></item>
+<item id="bulletin_notice"><t>Arstotzka
+Ministry of Admission
+Official Bulletin
+
+NOTICE:
+
+$content
+
+Glory to Arstotzka.</t></item>
+<item id="bulletin_endless"><t>Arstotzka
+Ministry of Admission
+Official Bulletin
+
+$style
+
+$course
+
+Glory to Arstotzka.</t></item>
+</data>
