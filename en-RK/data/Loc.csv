@@ -263,7 +263,7 @@
 "RulesInnerVaccineCert","OF","OF"
 "RulesInnerVaccineCert","HEALTH","HEALTH"
 "RulesInnerVaccineCert","REGULATION DOCUMENT","REGULATION DOCUMENT"
-"RulesInnerVaccineCert","POLIO VACCINATION REQUIRED FOR ALL ENTRANTS","POLIO VACCINATION REQUIRED FOR ALL ENTRANTS"
+"RulesInnerVaccineCert","POLIO VACCINATION REQUIRED FOR ALL ENTRANTS","EBOLA VACCINATION REQUIRED FOR ALL ENTRANTS"
 "RulesInnerVaccineCert","NO EXCEPTIONS","NO EXCEPTIONS"
 "RulesInnerConfiscation","PASSPORT CONFISCATION","PASSPORT CONFISCATION"
 "RulesInnerConfiscation","DROP PASSPORT IN CONFISCATION DRAWER","DROP PASSPORT IN CONFISCATION DRAWER"
@@ -454,10 +454,10 @@
 "news:IMPOR_SANCTIONS_END","Over So Fast? What Happened?","Over So Fast? What Happened?"
 "news:SURGERY_SETUP","Breakthrough Spinal Surgery Perfected","Breakthrough Spinal Surgery Perfected"
 "news:SURGERY_SETUP","Only Possible With Arstotzkan Expertise","Only Possible With Rustler Expertise"
-"news:VIRUS_PRIMER","Polio Resurfaces In United Fed","Polio Resurfaces In United Fed"
+"news:VIRUS_PRIMER","Polio Resurfaces In United Fed","Ebola Resurfaces In United Fed"
 "news:VIRUS_PRIMER","Isolated Diagnosis Or Something More?","Isolated Diagnosis Or Something More?"
 "news:VIRUS_BAN_UNITED_FED","Full-blown Epidemic Threatens United Fed!","Full-blown Epidemic Threatens United Fed!"
-"news:VIRUS_BAN_UNITED_FED","Previously Under Control, Polio Back With Vengeance","Previously Under Control, Polio Back With Vengeance"
+"news:VIRUS_BAN_UNITED_FED","Previously Under Control, Polio Back With Vengeance","Previously Under Control, Ebola Back With Vengeance"
 "news:VIRUS_REQUIRE_CERT","Ministry of Health Acts To Protect Citizens","Ministry of Health Acts To Protect Citizens"
 "news:VIRUS_REQUIRE_CERT","New Policy, Safeguards At Borders","New Policy, Safeguards At Borders"
 "news:SERIAL_KILLER","Serial Child Killer Escapes United Fed Prison!","Serial Child Killer Escapes United Fed Prison!"
@@ -1085,7 +1085,7 @@ This requirement extends to natives, foreigners, diplomats, and asylum seekers.
 
 Continued...","The risk of disease is too great. A new protocol has been instituted.
 
-All entrants must carry a valid CERTIFICATE OF VACCINATION with an up-to-date POLIO vaccine.
+All entrants must carry a valid CERTIFICATE OF VACCINATION with an up-to-date EBOLA vaccine.
 
 This requirement extends to natives, foreigners, diplomats, and asylum seekers.
 
@@ -1261,7 +1261,7 @@ Continue to confiscate all Rustler passports from native entrants."
 "facts","CONSTRUCTION","CONSTRUCTION"
 "facts","SURVEYING","SURVEYING"
 "facts","STATISTICS","STATISTICS"
-"facts","POLIO","POLIO"
+"facts","POLIO","EBOLA"
 "facts","HPV","HPV"
 "facts","COWPOX","COWPOX"
 "facts","TETANUS","TETANUS"
@@ -1323,7 +1323,7 @@ Continue to confiscate all Rustler passports from native entrants."
 "facts","No weapons or contraband","No weapons or contraband"
 "facts","All Kolechians must be searched","All Kolechians must be searched"
 "facts","Diplomats require authorization","Diplomats require authorization"
-"facts","Entrant must have polio vaccine cert","Entrant must have polio vaccine cert"
+"facts","Entrant must have polio vaccine cert","Entrant must have ebola vaccine cert"
 "facts","Asylum seekers must have a grant","Asylum seekers must have a grant"
 "facts","Foreigners require an access permit","Foreigners require an access permit"
 "facts","CONFISCATE ARSTOTZKAN PASSPORTS BELONGING TO ALTAN RESIDENTS.","CONFISCATE RUSTLER PASSPORTS BELONGING TO ALTAN RESIDENTS."
