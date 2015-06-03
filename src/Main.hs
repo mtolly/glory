@@ -116,14 +116,14 @@ notNull act = do
     else return p
 
 -- | Extracts and throws an SDL error if the action doesn't return the right number.
-code :: (Eq a, Num a, MonadIO m) => a -> m a -> m ()
-code c act = do
+sdlCode :: (Eq a, Num a, MonadIO m) => a -> m a -> m ()
+sdlCode c act = do
   n <- act
   unless (n == c) $ SDL.getError >>= liftIO . peekCString >>= error
 
 withSDL :: [SDL.InitFlag] -> IO a -> IO a
 withSDL flags = bracket_
-  (code 0 $ SDL.init $ foldr (.|.) 0 flags)
+  (sdlCode 0 $ SDL.init $ foldr (.|.) 0 flags)
   SDL.quit
 
 data Phase
@@ -142,7 +142,15 @@ data Phase
     , phaseTasks       :: [(Task, [Int])]
     }
   | AddPlayerName
-    { phaseNewPlayer   :: Player
+    { phaseJoystick    :: SDL.JoystickID
+    , phaseYes         :: Button360
+    , phaseNo          :: Button360
+    , phaseName        :: String
+    , phasePlayers     :: [Player]
+    , phaseTasks       :: [(Task, [Int])]
+    }
+  | AddPlayerAPI
+    { phaseName        :: String
     , phasePlayers     :: [Player]
     , phaseTasks       :: [(Task, [Int])]
     }
@@ -191,12 +199,18 @@ data Phase
     }
   deriving (Eq, Ord, Show)
 
-data Player = Player
-  { playerName :: String
-  , playerJoystick :: SDL.JoystickID
-  , playerYes :: Button360
-  , playerNo :: Button360
-  } deriving (Eq, Ord, Show, Read)
+data Player
+  = PlayerJoy
+    { playerName :: String
+    , playerJoystick :: SDL.JoystickID
+    , playerYes :: Button360
+    , playerNo :: Button360
+    }
+  | PlayerAPI
+    { playerName :: String
+    , playerCode :: String
+    }
+  deriving (Eq, Ord, Show, Read)
 
 type Task = String
 
@@ -236,7 +250,8 @@ assignTasks p = do
 update :: [(SDL.JoystickID, Button360)] -> [Vty.Key] -> Phase -> IO (Maybe Phase)
 update sdl keys phase = case phase of
   Waiting{..}
-    | pressedChar 'p' -> next $ AddPlayerYes{..}
+    | pressedChar '3' -> next $ AddPlayerYes{..}
+    | pressedChar 'a' -> next $ AddPlayerAPI{phaseName = "", ..}
     | pressedChar '=' -> next $ AddTask{phaseNewTask = "", ..}
     | pressedKey Vty.KEsc -> return Nothing
     | pressedKey Vty.KDel && not (null phasePlayers)
@@ -279,15 +294,7 @@ update sdl keys phase = case phase of
       guard $ btnNo /= phaseYes
       return btnNo
     in case buttons of
-      buttonNo : _ -> AddPlayerName
-        { phaseNewPlayer = Player
-          { playerName     = ""
-          , playerJoystick = phaseJoystick
-          , playerYes      = phaseYes
-          , playerNo       = buttonNo
-          }
-        , ..
-        }
+      buttonNo : _ -> AddPlayerName{ phaseName = "", phaseNo = buttonNo, .. }
       []  | pressedKey Vty.KEsc -> AddPlayerYes{..}
           | otherwise           -> phase
   AddPlayerName{..} -> next $ let
@@ -295,17 +302,44 @@ update sdl keys phase = case phase of
       Vty.KBS     -> \s -> take (length s - 1) s
       Vty.KChar c -> (++ [c])
       _           -> id
-    name' = foldl (flip ($)) (playerName phaseNewPlayer) funs
-    updatedPlayer = phaseNewPlayer{ playerName = name' }
+    name' = foldl (flip ($)) phaseName funs
+    newPlayer = PlayerJoy
+      { playerName     = name'
+      , playerJoystick = phaseJoystick
+      , playerYes      = phaseYes
+      , playerNo       = phaseNo
+      }
     in if
       | pressedKey Vty.KEnter ->
-        Waiting{ phasePlayers = phasePlayers ++ [updatedPlayer], .. }
-      | pressedKey Vty.KEsc -> AddPlayerNo
-        { phaseJoystick = playerJoystick phaseNewPlayer
-        , phaseYes = playerYes phaseNewPlayer
-        , ..
+        Waiting{ phasePlayers = phasePlayers ++ [newPlayer], .. }
+      | pressedKey Vty.KEsc -> AddPlayerNo{..}
+      | otherwise -> AddPlayerName{ phaseName = name', .. }
+  AddPlayerAPI{..} -> let
+    funs = flip map keys $ \case
+      Vty.KBS     -> \s -> take (length s - 1) s
+      Vty.KChar c -> (++ [c])
+      _           -> id
+    name' = foldl (flip ($)) phaseName funs
+    newPlayer = do
+      code <- newCode
+      return $ PlayerAPI
+        { playerName = name'
+        , playerCode = code
         }
-      | otherwise -> AddPlayerName{ phaseNewPlayer = updatedPlayer, .. }
+    usedCodes = do
+      PlayerAPI{..} <- phasePlayers
+      return $ playerCode
+    newCode = do
+      code <- replicateM 4 $ randomRIO ('A', 'Z')
+      if elem code usedCodes
+        then newCode
+        else return code
+    in if
+      | pressedKey Vty.KEnter -> do
+        player <- newPlayer
+        next Waiting{ phasePlayers = phasePlayers ++ [player], .. }
+      | pressedKey Vty.KEsc -> next Waiting{..}
+      | otherwise -> next AddPlayerAPI{ phaseName = name', .. }
   DeletePlayer{..} -> next $ if
     | pressedKey Vty.KUp    ->
       DeletePlayer{ phaseIndex = max 0 $ phaseIndex - 1, .. }
@@ -347,12 +381,12 @@ update sdl keys phase = case phase of
           guard $ not $ elem playerIndex $ phasePlayersYes ++ phasePlayersNo
           return (playerIndex, player)
         newYes = phasePlayersYes ++ do
-          (playerIndex, Player{..}) <- undecided
+          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
           (joy, btn) <- sdl
           guard $ joy == playerJoystick && btn == playerYes
           return playerIndex
         newNo = phasePlayersNo ++ do
-          (playerIndex, Player{..}) <- undecided
+          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
           (joy, btn) <- sdl
           guard $ joy == playerJoystick && btn == playerNo
           guard $ not $ elem playerIndex newYes
@@ -361,6 +395,7 @@ update sdl keys phase = case phase of
       | pressedKey Vty.KEsc -> Waiting{..}
       | diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
         || length newYes + length newNo == length phasePlayers -- everyone's voted
+        || pressedChar 'v'
         -> VoteComplete
           { phasePlayersYes = newYes
           , phasePlayersNo  = newNo
@@ -382,12 +417,12 @@ update sdl keys phase = case phase of
           guard $ not $ elem playerIndex $ map fst $ phasePlayersGood ++ phasePlayersBad
           return (playerIndex, player)
         newGood = phasePlayersGood ++ do
-          (playerIndex, Player{..}) <- undecided
+          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
           (joy, btn) <- sdl
           guard $ joy == playerJoystick && btn == playerYes
           return (playerIndex, now)
         newBad = phasePlayersBad ++ do
-          (playerIndex, Player{..}) <- undecided
+          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
           (joy, btn) <- sdl
           guard $ joy == playerJoystick && btn == playerNo
           guard $ not $ elem playerIndex $ map fst newGood
@@ -407,8 +442,9 @@ update sdl keys phase = case phase of
     next = return . Just
     pressedChar c = elem (Vty.KChar c) keys
     pressedKey k = elem k keys
-    inUse (joy, btn) = flip any (phasePlayers phase) $ \Player{..} ->
-      playerJoystick == joy && elem btn [playerYes, playerNo]
+    inUse (joy, btn) = flip any (phasePlayers phase) $ \case
+      PlayerJoy{..} -> playerJoystick == joy && elem btn [playerYes, playerNo]
+      PlayerAPI{}   -> False
 
 untilNothing :: (Monad m) => m (Maybe a) -> m [a]
 untilNothing act = act >>= \case
@@ -426,7 +462,7 @@ draw btns phase = case phase of
   AddPlayerYes{..} -> Vty.vertCat
     [ playersAndTasks
     , Vty.string Vty.defAttr ""
-    , Vty.string Vty.defAttr "Adding new inspector. Press YES button"
+    , Vty.string Vty.defAttr "Adding new controller inspector. Press YES button"
     ]
   AddPlayerNo{..} -> Vty.vertCat
     [ playersAndTasks
@@ -437,19 +473,28 @@ draw btns phase = case phase of
       , Vty.string Vty.defAttr " for YES. Press NO button"
       ]
     ]
-  AddPlayerName{ phaseNewPlayer = Player{..}, .. } -> Vty.vertCat
+  AddPlayerName{..} -> Vty.vertCat
     [ playersAndTasks
     , Vty.string Vty.defAttr ""
     , Vty.horizCat
-      [ Vty.string Vty.defAttr $ "Joystick " ++ show playerJoystick ++ ", "
-      , Vty.string (color playerJoystick playerYes) $ show playerYes
+      [ Vty.string Vty.defAttr $ "Joystick " ++ show phaseJoystick ++ ", "
+      , Vty.string (color phaseJoystick phaseYes) $ show phaseYes
       , Vty.string Vty.defAttr " for YES, "
-      , Vty.string (color playerJoystick playerNo) $ show playerNo
+      , Vty.string (color phaseJoystick phaseNo) $ show phaseNo
       , Vty.string Vty.defAttr " for NO. Enter name"
       ]
     , Vty.string Vty.defAttr ""
-    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) playerName
-    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize playerName
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) phaseName
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseName
+    , Vty.string Vty.defAttr "" -- reset color
+    ]
+  AddPlayerAPI{..} -> Vty.vertCat
+    [ playersAndTasks
+    , Vty.string Vty.defAttr ""
+    , Vty.string Vty.defAttr "Adding new API inspector. Enter name"
+    , Vty.string Vty.defAttr ""
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) phaseName
+    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseName
     , Vty.string Vty.defAttr "" -- reset color
     ]
   DeletePlayer{..} -> Vty.vertCat
@@ -502,7 +547,7 @@ draw btns phase = case phase of
         in showTime $ diffUTCTime (foldr max phaseTimeStart allTimes) phaseTimeStart
       else showTime $ diffUTCTime phaseTimeNow phaseTimeStart
     , Vty.string Vty.defAttr ""
-    , Vty.vertCat $ flip map (zip [0..] phasePlayers) $ \(i, Player{..}) -> let
+    , Vty.vertCat $ flip map (zip [0..] phasePlayers) $ \(i, player) -> let
         good = [ time | (j, time) <- phasePlayersGood, i == j ]
         bad  = [ time | (j, time) <- phasePlayersBad , i == j ]
         tasks = [ task | (task, ixs) <- phaseTasks, elem i ixs ]
@@ -512,8 +557,8 @@ draw btns phase = case phase of
           (_    , _ : _) -> Vty.defAttr `Vty.withForeColor` Vty.white `Vty.withBackColor` Vty.red
         in Vty.vertCat
           [ Vty.string attr $ case good ++ bad of
-            time : _ -> playerName ++ " (" ++ showTime (diffUTCTime time phaseTimeStart) ++ ")"
-            []       -> playerName
+            time : _ -> playerName player ++ " (" ++ showTime (diffUTCTime time phaseTimeStart) ++ ")"
+            []       -> playerName player
           , Vty.vertCat [ Vty.string attr $ "  " ++ task | task <- tasks ]
           ]
     , Vty.string Vty.defAttr "" -- reset color
@@ -544,26 +589,31 @@ draw btns phase = case phase of
         ]
       ]
     imagePlayer :: Int -> Player -> Vty.Image
-    imagePlayer i Player{..} = Vty.horizCat
-      [ let nameColor = case i of
-              0 -> rgb 234 60 60
-              1 -> rgb 239 160 40
-              2 -> rgb 226 226 59
-              3 -> rgb 88 219 65
-              4 -> rgb 48 232 232
-              5 -> rgb 49 111 234
-              6 -> rgb 148 78 229
-              7 -> rgb 239 95 239
-              _ -> rgb 170 132 99
-              where rgb :: Int -> Int -> Int -> Vty.Color
-                    rgb = Vty.rgbColor
-        in Vty.string (Vty.defAttr `Vty.withForeColor` nameColor) playerName
+    imagePlayer i PlayerJoy{..} = Vty.horizCat
+      [ Vty.string (Vty.defAttr `Vty.withForeColor` nameColor i) playerName
       , Vty.string Vty.defAttr $ " (joystick " ++ show playerJoystick ++ ", "
       , Vty.string (color playerJoystick playerYes) $ show playerYes
       , Vty.string Vty.defAttr $ " for yes, "
       , Vty.string (color playerJoystick playerNo) $ show playerNo
       , Vty.string Vty.defAttr " for no)"
       ]
+    imagePlayer i PlayerAPI{..} = Vty.horizCat
+      [ Vty.string (Vty.defAttr `Vty.withForeColor` nameColor i) playerName
+      , Vty.string Vty.defAttr $ " (API code " ++ playerCode ++ ")"
+      ]
+    nameColor :: Int -> Vty.Color
+    nameColor i = case i of
+      0 -> rgb 234 60 60
+      1 -> rgb 239 160 40
+      2 -> rgb 226 226 59
+      3 -> rgb 88 219 65
+      4 -> rgb 48 232 232
+      5 -> rgb 49 111 234
+      6 -> rgb 148 78 229
+      7 -> rgb 239 95 239
+      _ -> rgb 170 132 99
+      where rgb :: Int -> Int -> Int -> Vty.Color
+            rgb = Vty.rgbColor
     color joy btn = if Set.member btn $ btns !! fromIntegral joy
       then Vty.defAttr `Vty.withForeColor` case btn of
         A -> Vty.green
