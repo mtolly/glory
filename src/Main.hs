@@ -547,24 +547,12 @@ draw btns phase = case phase of
       remaining = phaseVoteLength - diffUTCTime phaseTimeNow phaseTimeStart
       in "Vote now! " ++ showTime remaining ++ " seconds left"
     , Vty.string Vty.defAttr ""
-    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.green) $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
-    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
-        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
-    , Vty.string Vty.defAttr ""
-    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.red) $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
-    , Vty.vertCat $ flip map phasePlayersNo $ \ix ->
-        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
+    , showVote phasePlayersYes phasePlayersNo
     ]
   VoteComplete{..} -> Vty.vertCat
     [ Vty.string Vty.defAttr $ "Voting is over."
     , Vty.string Vty.defAttr ""
-    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.green) $ "YEA (" ++ show (length phasePlayersYes) ++ "):"
-    , Vty.vertCat $ flip map phasePlayersYes $ \ix ->
-        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
-    , Vty.string Vty.defAttr ""
-    , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.red) $ "NAY (" ++ show (length phasePlayersNo) ++ "):"
-    , Vty.vertCat $ flip map phasePlayersNo $ \ix ->
-        Vty.string Vty.defAttr $ "  " ++ playerName (phasePlayers !! ix)
+    , showVote phasePlayersYes phasePlayersNo
     ]
   Inspection{..} -> Vty.vertCat
     [ Vty.string Vty.defAttr $ if inspectionDone then "Inspection complete." else "Inspection is underway."
@@ -584,8 +572,8 @@ draw btns phase = case phase of
           (_    , _ : _) -> Vty.defAttr `Vty.withForeColor` Vty.white `Vty.withBackColor` Vty.red
         in Vty.vertCat
           [ Vty.string attr $ case good ++ bad of
-            time : _ -> playerName player ++ " (" ++ showTime (diffUTCTime time phaseTimeStart) ++ ")"
-            []       -> playerName player
+            time : _ -> simpleShowPlayer player ++ " (" ++ showTime (diffUTCTime time phaseTimeStart) ++ ")"
+            []       -> simpleShowPlayer player
           , Vty.vertCat [ Vty.string attr $ "  " ++ task | task <- tasks ]
           ]
     , Vty.string Vty.defAttr "" -- reset color
@@ -598,6 +586,22 @@ draw btns phase = case phase of
     , Vty.string Vty.defAttr "" -- color reset
     ]
   where
+    showVote playersYes playersNo = Vty.vertCat
+      [ Vty.string (Vty.defAttr `Vty.withForeColor` Vty.green) $ "YEA (" ++ show (length playersYes) ++ "):"
+      , Vty.vertCat $ flip map playersYes $ \ix ->
+          Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
+      , Vty.string Vty.defAttr ""
+      , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.red) $ "NAY (" ++ show (length playersNo) ++ "):"
+      , Vty.vertCat $ flip map playersNo $ \ix ->
+          Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
+      , Vty.string Vty.defAttr ""
+      , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.yellow) $ "??? (" ++ show (length undecided) ++ "):"
+      , Vty.vertCat $ flip map undecided $ \ix ->
+          Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
+      ] where undecided = [ i | i <- [0 .. length (phasePlayers phase) - 1], not $ elem i playersYes || elem i playersNo ]
+    simpleShowPlayer = \case
+      PlayerAPI{..} -> playerName ++ " (" ++ playerCode ++ ")"
+      PlayerJoy{..} -> playerName ++ " (joy " ++ show playerJoystick ++ ", " ++ show playerYes ++ ", " ++ show playerNo ++ ")"
     showTime :: NominalDiffTime -> String
     showTime t = show (realToFrac t :: Milli)
     playersAndTasks = Vty.vertCat
@@ -626,7 +630,7 @@ draw btns phase = case phase of
       ]
     imagePlayer i PlayerAPI{..} = Vty.horizCat
       [ Vty.string (Vty.defAttr `Vty.withForeColor` nameColor i) playerName
-      , Vty.string Vty.defAttr $ " (API code " ++ playerCode ++ ")"
+      , Vty.string Vty.defAttr $ " (code " ++ playerCode ++ ")"
       ]
     nameColor :: Int -> Vty.Color
     nameColor i = case i of
