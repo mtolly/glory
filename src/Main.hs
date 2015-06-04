@@ -676,6 +676,7 @@ main = do
     _ <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
 
     apiEvent <- newEmptyMVar
+    remote <- BL.readFile "remote/index.html"
     _ <- forkIO $ Warp.run 4200 $ \req f ->
       case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
         [code, "YES"] -> do
@@ -685,8 +686,7 @@ main = do
           putMVar apiEvent (T.unpack code, False)
           f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
         [] -> do
-          page <- BL.readFile "remote/index.html"
-          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html")] page
+          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html")] remote
         _ -> do
           f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
 
