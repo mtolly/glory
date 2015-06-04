@@ -27,6 +27,7 @@ import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.HTTP.Types as HTTP
 import qualified Data.Text as T
+import qualified Data.ByteString.Lazy as BL
 
 data Button360
   = A
@@ -675,7 +676,7 @@ main = do
     _ <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
 
     apiEvent <- newEmptyMVar
-    _ <- forkIO $ Warp.run 7081 $ \req f ->
+    _ <- forkIO $ Warp.run 4200 $ \req f ->
       case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
         [code, "YES"] -> do
           putMVar apiEvent (T.unpack code, True)
@@ -683,6 +684,9 @@ main = do
         [code, "NO"] -> do
           putMVar apiEvent (T.unpack code, False)
           f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
+        [] -> do
+          page <- BL.readFile "remote/index.html"
+          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html")] page
         _ -> do
           f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
 

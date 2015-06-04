@@ -19,9 +19,9 @@
             }
           }
         };
-        var address = $('#address-field').val();
+        var address = window.location.origin;
         var code = $('#code-field').val();
-        req.open('GET', 'http://' + address + ':7081/' + code + '/' + (bool ? 'yes' : 'no'));
+        req.open('GET', address + '/' + code + '/' + (bool ? 'yes' : 'no'));
         req.send();
       };
     </script>
@@ -40,13 +40,13 @@
       form input, form button {
         display: block;
         width: 100%;
-        height: 23%;
+        height: 32%;
         margin: 0;
         padding: 0;
         font-size: 20px;
       }
       form input {
-        padding-left: 10px;
+        text-align: center;
       }
       #yes-button {
         background-color: green;
@@ -60,7 +60,6 @@
   </head>
   <body>
     <form>
-      <input type="text" id="address-field" placeholder="Address">
       <input type="text" id="code-field" placeholder="Code">
       <button type="button" id="yes-button" onclick="window.forGlory(true);">YES</button>
       <button type="button" id="no-button" onclick="window.forGlory(false);">NO</button>
