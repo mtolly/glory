@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
@@ -22,6 +23,10 @@ import System.Random.Shuffle (shuffleM)
 import System.Random (randomRIO)
 import Data.Time.Clock
 import Data.Fixed
+import qualified Network.Wai as Wai
+import qualified Network.Wai.Handler.Warp as Warp
+import qualified Network.HTTP.Types as HTTP
+import qualified Data.Text as T
 
 data Button360
   = A
@@ -247,8 +252,8 @@ assignTasks p = do
       newMapping = [ (t, indexesFor t) | (t, _) <- phaseTasks p ]
   return $ p { phaseTasks = newMapping }
 
-update :: [(SDL.JoystickID, Button360)] -> [Vty.Key] -> Phase -> IO (Maybe Phase)
-update sdl keys phase = case phase of
+update :: [(SDL.JoystickID, Button360)] -> [Vty.Key] -> [(String, Bool)] -> Phase -> IO (Maybe Phase)
+update sdl keys api phase = case phase of
   Waiting{..}
     | pressedChar '3' -> next $ AddPlayerYes{..}
     | pressedChar 'a' -> next $ AddPlayerAPI{phaseName = "", ..}
@@ -380,17 +385,28 @@ update sdl keys phase = case phase of
           (playerIndex, player) <- zip [0..] phasePlayers
           guard $ not $ elem playerIndex $ phasePlayersYes ++ phasePlayersNo
           return (playerIndex, player)
-        newYes = phasePlayersYes ++ do
-          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
-          (joy, btn) <- sdl
-          guard $ joy == playerJoystick && btn == playerYes
-          return playerIndex
-        newNo = phasePlayersNo ++ do
-          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
-          (joy, btn) <- sdl
-          guard $ joy == playerJoystick && btn == playerNo
-          guard $ not $ elem playerIndex newYes
-          return playerIndex
+        newYes = phasePlayersYes
+          ++ do
+            (playerIndex, PlayerJoy{..}) <- undecided
+            (joy, btn) <- sdl
+            guard $ joy == playerJoystick && btn == playerYes
+            return playerIndex
+          ++ do
+            (playerIndex, PlayerAPI{..}) <- undecided
+            (code, True) <- api
+            guard $ code == playerCode
+            return playerIndex
+        newNo = filter (\i -> not $ elem i newYes) $ phasePlayersNo
+          ++ do
+            (playerIndex, PlayerJoy{..}) <- undecided
+            (joy, btn) <- sdl
+            guard $ joy == playerJoystick && btn == playerNo
+            return playerIndex
+          ++ do
+            (playerIndex, PlayerAPI{..}) <- undecided
+            (code, False) <- api
+            guard $ code == playerCode
+            return playerIndex
     next $ if
       | pressedKey Vty.KEsc -> Waiting{..}
       | diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
@@ -416,17 +432,28 @@ update sdl keys phase = case phase of
           (playerIndex, player) <- zip [0..] phasePlayers
           guard $ not $ elem playerIndex $ map fst $ phasePlayersGood ++ phasePlayersBad
           return (playerIndex, player)
-        newGood = phasePlayersGood ++ do
-          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
-          (joy, btn) <- sdl
-          guard $ joy == playerJoystick && btn == playerYes
-          return (playerIndex, now)
-        newBad = phasePlayersBad ++ do
-          (playerIndex, PlayerJoy{..}) <- undecided -- TODO: API
-          (joy, btn) <- sdl
-          guard $ joy == playerJoystick && btn == playerNo
-          guard $ not $ elem playerIndex $ map fst newGood
-          return (playerIndex, now)
+        newGood = phasePlayersGood
+          ++ do
+            (playerIndex, PlayerJoy{..}) <- undecided
+            (joy, btn) <- sdl
+            guard $ joy == playerJoystick && btn == playerYes
+            return (playerIndex, now)
+          ++ do
+            (playerIndex, PlayerAPI{..}) <- undecided
+            (code, True) <- api
+            guard $ code == playerCode
+            return (playerIndex, now)
+        newBad = filter (\(i, _) -> not $ elem i $ map fst newGood) $ phasePlayersBad
+          ++ do
+            (playerIndex, PlayerJoy{..}) <- undecided
+            (joy, btn) <- sdl
+            guard $ joy == playerJoystick && btn == playerNo
+            return (playerIndex, now)
+          ++ do
+            (playerIndex, PlayerAPI{..}) <- undecided
+            (code, False) <- api
+            guard $ code == playerCode
+            return (playerIndex, now)
     next $ if
       | pressedKey Vty.KEsc -> Waiting{..}
       | otherwise -> Inspection
@@ -641,7 +668,19 @@ main = do
 
     vty <- Vty.standardIOConfig >>= Vty.mkVty
     vtyEvent <- newEmptyMVar
-    _threadid <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
+    _ <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
+
+    apiEvent <- newEmptyMVar
+    _ <- forkIO $ Warp.run 7081 $ \req f ->
+      case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
+        [code, "YES"] -> do
+          putMVar apiEvent (T.unpack code, True)
+          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received YES."
+        [code, "NO"] -> do
+          putMVar apiEvent (T.unpack code, False)
+          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
+        _ -> do
+          f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
 
     let loop :: Phase -> [Set.Set Button360] -> IO ()
         loop phase prev = do
@@ -649,9 +688,10 @@ main = do
           liftIO $ threadDelay 5000
           sdlEvents <- untilNothing pollSDL
           vtyEvents <- untilNothing $ tryTakeMVar vtyEvent
+          apiEvents <- untilNothing $ tryTakeMVar apiEvent
           let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
               curr = foldr ($) prev $ map modifyButtons sdlEvents
-          update (newPresses prev curr) keys phase >>= \case
+          update (newPresses prev curr) keys apiEvents phase >>= \case
             Just phase' -> loop phase' curr
             Nothing     -> Vty.shutdown vty
 
