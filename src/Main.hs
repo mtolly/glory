@@ -1,33 +1,35 @@
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE PatternSynonyms   #-}
+{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TupleSections     #-}
 module Main (main) where
 
-import Foreign
-import Foreign.C
-import qualified Graphics.UI.SDL as SDL
-import Control.Exception (bracket_)
-import Control.Concurrent (threadDelay, forkIO)
-import Control.Concurrent.MVar
-import Control.Monad
-import Control.Monad.IO.Class
-import Data.Maybe
-import System.IO (hIsTerminalDevice, stdout)
-import Data.Char (toLower)
-import qualified Data.Set as Set
-import qualified Graphics.Vty as Vty
-import System.Random.Shuffle (shuffleM)
-import System.Random (randomRIO)
-import Data.Time.Clock
-import Data.Fixed
-import qualified Network.Wai as Wai
+import           Control.Applicative      ((<$>))
+import           Control.Concurrent       (forkIO, threadDelay)
+import           Control.Concurrent.MVar  (newEmptyMVar, putMVar, tryTakeMVar)
+import           Control.Exception        (bracket_)
+import           Control.Monad            (forM, forever, guard, liftM,
+                                           replicateM, unless)
+import           Control.Monad.IO.Class   (MonadIO, liftIO)
+import qualified Data.ByteString.Lazy     as BL
+import           Data.Char                (toLower)
+import           Data.Fixed               (Milli)
+import           Data.Maybe               (fromMaybe)
+import qualified Data.Set                 as Set
+import qualified Data.Text                as T
+import qualified Data.Time.Clock          as Clock
+import           Foreign                  (Ptr, alloca, nullPtr, peek, (.|.))
+import           Foreign.C                (peekCString)
+import qualified Graphics.UI.SDL          as SDL
+import qualified Graphics.Vty             as Vty
+import qualified Network.HTTP.Types       as HTTP
+import qualified Network.Wai              as Wai
 import qualified Network.Wai.Handler.Warp as Warp
-import qualified Network.HTTP.Types as HTTP
-import qualified Data.Text as T
-import qualified Data.ByteString.Lazy as BL
+import           System.IO                (hIsTerminalDevice, stdout)
+import           System.Random            (randomRIO)
+import           System.Random.Shuffle    (shuffleM)
 
 data Button360
   = A
@@ -54,7 +56,7 @@ data Ortho = U | D | L | R
 -- | Returns Just an event if there is one currently in the queue.
 pollSDL :: (MonadIO m) => m (Maybe SDL.Event)
 pollSDL = liftIO $ alloca $ \pevt -> SDL.pollEvent pevt >>= \case
-  1 -> fmap Just $ peek pevt
+  1 -> Just <$> peek pevt
   _ -> return Nothing
 
 modifyButtons :: SDL.Event -> [Set.Set Button360] -> [Set.Set Button360]
@@ -134,83 +136,83 @@ withSDL flags = bracket_
 
 data Phase
   = Waiting
-    { phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
     }
   | AddPlayerYes
-    { phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
     }
   | AddPlayerNo
-    { phaseJoystick    :: SDL.JoystickID
-    , phaseYes         :: Button360
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phaseJoystick :: SDL.JoystickID
+    , phaseYes      :: Button360
+    , phasePlayers  :: [Player]
+    , phaseTasks    :: [(Task, [Int])]
     }
   | AddPlayerName
-    { phaseJoystick    :: SDL.JoystickID
-    , phaseYes         :: Button360
-    , phaseNo          :: Button360
-    , phaseName        :: String
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phaseJoystick :: SDL.JoystickID
+    , phaseYes      :: Button360
+    , phaseNo       :: Button360
+    , phaseName     :: String
+    , phasePlayers  :: [Player]
+    , phaseTasks    :: [(Task, [Int])]
     }
   | AddPlayerAPI
-    { phaseName        :: String
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phaseName    :: String
+    , phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
     }
   | DeletePlayer
-    { phaseIndex       :: Int
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phaseIndex   :: Int
+    , phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
     }
   | AddTask
-    { phaseNewTask     :: Task
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phaseNewTask :: Task
+    , phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
     }
   | DeleteTask
-    { phaseIndex       :: Int
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phaseIndex   :: Int
+    , phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
     }
   | Voting
-    { phasePlayersYes  :: [Int]
-    , phasePlayersNo   :: [Int]
-    , phaseTimeStart   :: UTCTime
-    , phaseTimeNow     :: UTCTime
-    , phaseVoteLength  :: NominalDiffTime
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phasePlayersYes :: [Int]
+    , phasePlayersNo  :: [Int]
+    , phaseTimeStart  :: Clock.UTCTime
+    , phaseTimeNow    :: Clock.UTCTime
+    , phaseVoteLength :: Clock.NominalDiffTime
+    , phasePlayers    :: [Player]
+    , phaseTasks      :: [(Task, [Int])]
     }
   | VoteComplete
-    { phasePlayersYes  :: [Int]
-    , phasePlayersNo   :: [Int]
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phasePlayersYes :: [Int]
+    , phasePlayersNo  :: [Int]
+    , phasePlayers    :: [Player]
+    , phaseTasks      :: [(Task, [Int])]
     }
   | Inspection
-    { phasePlayersGood :: [(Int, UTCTime)]
-    , phasePlayersBad  :: [(Int, UTCTime)]
-    , phaseTimeStart   :: UTCTime
-    , phaseTimeNow     :: UTCTime
+    { phasePlayersGood :: [(Int, Clock.UTCTime)]
+    , phasePlayersBad  :: [(Int, Clock.UTCTime)]
+    , phaseTimeStart   :: Clock.UTCTime
+    , phaseTimeNow     :: Clock.UTCTime
     , phasePlayers     :: [Player]
     , phaseTasks       :: [(Task, [Int])]
     }
   | ChosenOne
-    { phaseIndex       :: Int
-    , phasePlayers     :: [Player]
-    , phaseTasks       :: [(Task, [Int])]
+    { phaseIndex   :: Int
+    , phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
     }
   deriving (Eq, Ord, Show)
 
 data Player
   = PlayerJoy
-    { playerName :: String
+    { playerName     :: String
     , playerJoystick :: SDL.JoystickID
-    , playerYes :: Button360
-    , playerNo :: Button360
+    , playerYes      :: Button360
+    , playerNo       :: Button360
     }
   | PlayerAPI
     { playerName :: String
@@ -233,7 +235,7 @@ getPlayersTasks p = do
         DeletePlayer{..} -> Just phaseIndex
         _                -> Nothing
   (ix, player) <- zip [0..] $ phasePlayers p
-  let tasks = [ task | (task, ixs) <- phaseTasks p, elem ix ixs ]
+  let tasks = [ task | (task, ixs) <- phaseTasks p, ix `elem` ixs ]
   return (selected == Just ix, player, tasks)
 
 newPresses :: [Set.Set Button360] -> [Set.Set Button360] -> [(SDL.JoystickID, Button360)]
@@ -256,18 +258,18 @@ assignTasks p = do
 update :: [(SDL.JoystickID, Button360)] -> [Vty.Key] -> [(String, Bool)] -> Phase -> IO (Maybe Phase)
 update sdl keys api phase = case phase of
   Waiting{..}
-    | pressedChar '3' -> next $ AddPlayerYes{..}
-    | pressedChar 'a' -> next $ AddPlayerAPI{phaseName = "", ..}
-    | pressedChar '=' -> next $ AddTask{phaseNewTask = "", ..}
+    | pressedChar '3' -> next AddPlayerYes{..}
+    | pressedChar 'a' -> next AddPlayerAPI{ phaseName = "", .. }
+    | pressedChar '=' -> next AddTask{ phaseNewTask = "", .. }
     | pressedKey Vty.KEsc -> return Nothing
     | pressedKey Vty.KDel && not (null phasePlayers)
-      -> next $ DeletePlayer{phaseIndex = 0, ..}
+      -> next DeletePlayer{ phaseIndex = 0, .. }
     | pressedChar '-' && not (null phaseTasks)
-      -> next $ DeleteTask{phaseIndex = 0, ..}
-    | pressedChar 'l' -> fmap Just $ assignTasks phase
+      -> next DeleteTask{ phaseIndex = 0, .. }
+    | pressedChar 'l' -> Just <$> assignTasks phase
     | pressedChar 'v' -> do
-      now <- getCurrentTime
-      next $ Voting
+      now <- Clock.getCurrentTime
+      next Voting
         { phasePlayersYes = []
         , phasePlayersNo  = []
         , phaseTimeStart  = now
@@ -276,8 +278,8 @@ update sdl keys api phase = case phase of
         , ..
         }
     | pressedChar ' ' -> do
-      now <- getCurrentTime
-      next $ Inspection
+      now <- Clock.getCurrentTime
+      next Inspection
         { phasePlayersGood = []
         , phasePlayersBad  = []
         , phaseTimeStart   = now
@@ -328,16 +330,16 @@ update sdl keys api phase = case phase of
     name' = foldl (flip ($)) phaseName funs
     newPlayer = do
       code <- newCode
-      return $ PlayerAPI
+      return PlayerAPI
         { playerName = name'
         , playerCode = code
         }
     usedCodes = do
       PlayerAPI{..} <- phasePlayers
-      return $ playerCode
+      return playerCode
     newCode = do
       code <- replicateM 4 $ randomRIO ('A', 'Z')
-      if elem code usedCodes
+      if code `elem` usedCodes
         then newCode
         else return code
     in if
@@ -381,10 +383,10 @@ update sdl keys api phase = case phase of
       }
     | otherwise -> phase
   Voting{..} -> do
-    now <- getCurrentTime
+    now <- Clock.getCurrentTime
     let undecided = do
           (playerIndex, player) <- zip [0..] phasePlayers
-          guard $ not $ elem playerIndex $ phasePlayersYes ++ phasePlayersNo
+          guard $ notElem playerIndex $ phasePlayersYes ++ phasePlayersNo
           return (playerIndex, player)
         newYes = phasePlayersYes
           ++ do
@@ -397,7 +399,7 @@ update sdl keys api phase = case phase of
             (code, True) <- api
             guard $ code == playerCode
             return playerIndex
-        newNo = filter (\i -> not $ elem i newYes) $ phasePlayersNo
+        newNo = filter (`notElem` newYes) $ phasePlayersNo
           ++ do
             (playerIndex, PlayerJoy{..}) <- undecided
             (joy, btn) <- sdl
@@ -410,7 +412,7 @@ update sdl keys api phase = case phase of
             return playerIndex
     next $ if
       | pressedKey Vty.KEsc -> Waiting{..}
-      | diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
+      | Clock.diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
         || length newYes + length newNo == length phasePlayers -- everyone's voted
         || pressedChar 'v'
         -> VoteComplete
@@ -428,10 +430,10 @@ update sdl keys api phase = case phase of
     | pressedKey Vty.KEsc -> Waiting{..}
     | otherwise           -> phase
   Inspection{..} -> do
-    now <- getCurrentTime
+    now <- Clock.getCurrentTime
     let undecided = do
           (playerIndex, player) <- zip [0..] phasePlayers
-          guard $ not $ elem playerIndex $ map fst $ phasePlayersGood ++ phasePlayersBad
+          guard $ notElem playerIndex $ map fst $ phasePlayersGood ++ phasePlayersBad
           return (playerIndex, player)
         newGood = phasePlayersGood
           ++ do
@@ -444,7 +446,7 @@ update sdl keys api phase = case phase of
             (code, True) <- api
             guard $ code == playerCode
             return (playerIndex, now)
-        newBad = filter (\(i, _) -> not $ elem i $ map fst newGood) $ phasePlayersBad
+        newBad = filter (\(i, _) -> notElem i $ map fst newGood) $ phasePlayersBad
           ++ do
             (playerIndex, PlayerJoy{..}) <- undecided
             (joy, btn) <- sdl
@@ -468,8 +470,8 @@ update sdl keys api phase = case phase of
     | otherwise           -> phase
   where
     next = return . Just
-    pressedChar c = elem (Vty.KChar c) keys
-    pressedKey k = elem k keys
+    pressedChar c = Vty.KChar c `elem` keys
+    pressedKey k = k `elem` keys
     inUse (joy, btn) = flip any (phasePlayers phase) $ \case
       PlayerJoy{..} -> playerJoystick == joy && elem btn [playerYes, playerNo]
       PlayerAPI{}   -> False
@@ -489,12 +491,12 @@ draw btns phase = case phase of
     ]
   AddPlayerYes{..} -> Vty.vertCat
     [ playersAndTasks
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string Vty.defAttr "Adding new controller inspector. Press YES button"
     ]
   AddPlayerNo{..} -> Vty.vertCat
     [ playersAndTasks
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.horizCat
       [ Vty.string Vty.defAttr $ "Joystick " ++ show phaseJoystick ++ ", "
       , Vty.string (color phaseJoystick phaseYes) $ show phaseYes
@@ -503,7 +505,7 @@ draw btns phase = case phase of
     ]
   AddPlayerName{..} -> Vty.vertCat
     [ playersAndTasks
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.horizCat
       [ Vty.string Vty.defAttr $ "Joystick " ++ show phaseJoystick ++ ", "
       , Vty.string (color phaseJoystick phaseYes) $ show phaseYes
@@ -511,48 +513,48 @@ draw btns phase = case phase of
       , Vty.string (color phaseJoystick phaseNo) $ show phaseNo
       , Vty.string Vty.defAttr " for NO. Enter name"
       ]
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) phaseName
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseName
-    , Vty.string Vty.defAttr "" -- reset color
+    , blank -- reset color
     ]
   AddPlayerAPI{..} -> Vty.vertCat
     [ playersAndTasks
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string Vty.defAttr "Adding new API inspector. Enter name"
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) phaseName
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseName
-    , Vty.string Vty.defAttr "" -- reset color
+    , blank -- reset color
     ]
   DeletePlayer{..} -> Vty.vertCat
     [ playersAndTasks
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string Vty.defAttr "Remove which inspector from duty?"
     ]
   AddTask{..} -> Vty.vertCat
     [ playersAndTasks
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string Vty.defAttr "Enter new task name"
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) phaseNewTask
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseNewTask
-    , Vty.string Vty.defAttr "" -- reset color
+    , blank -- reset color
     ]
   DeleteTask{..} -> Vty.vertCat
     [ playersAndTasks
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string Vty.defAttr "Remove which task?"
     ]
   Voting{..} -> Vty.vertCat
     [ Vty.string Vty.defAttr $ let
-      remaining = phaseVoteLength - diffUTCTime phaseTimeNow phaseTimeStart
+      remaining = phaseVoteLength - Clock.diffUTCTime phaseTimeNow phaseTimeStart
       in "Vote now! " ++ showTime remaining ++ " seconds left"
-    , Vty.string Vty.defAttr ""
+    , blank
     , showVote phasePlayersYes phasePlayersNo
     ]
   VoteComplete{..} -> Vty.vertCat
-    [ Vty.string Vty.defAttr $ "Voting is over."
-    , Vty.string Vty.defAttr ""
+    [ Vty.string Vty.defAttr "Voting is over."
+    , blank
     , showVote phasePlayersYes phasePlayersNo
     ]
   Inspection{..} -> Vty.vertCat
@@ -560,42 +562,43 @@ draw btns phase = case phase of
     , Vty.string Vty.defAttr $ "Time: " ++ if inspectionDone
       then let
         allTimes = [ t | (_, t) <- phasePlayersGood ++ phasePlayersBad ]
-        in showTime $ diffUTCTime (foldr max phaseTimeStart allTimes) phaseTimeStart
-      else showTime $ diffUTCTime phaseTimeNow phaseTimeStart
-    , Vty.string Vty.defAttr ""
+        in showTime $ Clock.diffUTCTime (foldr max phaseTimeStart allTimes) phaseTimeStart
+      else showTime $ Clock.diffUTCTime phaseTimeNow phaseTimeStart
+    , blank
     , Vty.vertCat $ flip map (zip [0..] phasePlayers) $ \(i, player) -> let
         good = [ time | (j, time) <- phasePlayersGood, i == j ]
         bad  = [ time | (j, time) <- phasePlayersBad , i == j ]
-        tasks = [ task | (task, ixs) <- phaseTasks, elem i ixs ]
+        tasks = [ task | (task, ixs) <- phaseTasks, i `elem` ixs ]
         attr = case (good, bad) of
           ([]   , []   ) -> Vty.defAttr
           (_ : _, _    ) -> Vty.defAttr `Vty.withForeColor` Vty.green
           (_    , _ : _) -> Vty.defAttr `Vty.withForeColor` Vty.white `Vty.withBackColor` Vty.red
         in Vty.vertCat
           [ Vty.string attr $ case good ++ bad of
-            time : _ -> simpleShowPlayer player ++ " (" ++ showTime (diffUTCTime time phaseTimeStart) ++ ")"
+            time : _ -> simpleShowPlayer player ++ " (" ++ showTime (Clock.diffUTCTime time phaseTimeStart) ++ ")"
             []       -> simpleShowPlayer player
           , Vty.vertCat [ Vty.string attr $ "  " ++ task | task <- tasks ]
           ]
-    , Vty.string Vty.defAttr "" -- reset color
+    , blank -- reset color
     ] where inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
   ChosenOne{..} -> Vty.vertCat
     [ Vty.string Vty.defAttr "A player has been chosen!"
-    , Vty.string Vty.defAttr ""
+    , blank
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $
       "  " ++ playerName (phasePlayers !! phaseIndex)
-    , Vty.string Vty.defAttr "" -- color reset
+    , blank -- reset color
     ]
   where
+    blank = Vty.string Vty.defAttr ""
     showVote playersYes playersNo = Vty.vertCat
       [ Vty.string (Vty.defAttr `Vty.withForeColor` Vty.green) $ "YEA (" ++ show (length playersYes) ++ "):"
       , Vty.vertCat $ flip map playersYes $ \ix ->
           Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
-      , Vty.string Vty.defAttr ""
+      , blank
       , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.red) $ "NAY (" ++ show (length playersNo) ++ "):"
       , Vty.vertCat $ flip map playersNo $ \ix ->
           Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
-      , Vty.string Vty.defAttr ""
+      , blank
       , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.yellow) $ "??? (" ++ show (length undecided) ++ "):"
       , Vty.vertCat $ flip map undecided $ \ix ->
           Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
@@ -603,12 +606,12 @@ draw btns phase = case phase of
     simpleShowPlayer = \case
       PlayerAPI{..} -> playerName ++ " (" ++ playerCode ++ ")"
       PlayerJoy{..} -> playerName ++ " (joy " ++ show playerJoystick ++ ", " ++ show playerYes ++ ", " ++ show playerNo ++ ")"
-    showTime :: NominalDiffTime -> String
+    showTime :: Clock.NominalDiffTime -> String
     showTime t = show (realToFrac t :: Milli)
     playersAndTasks = Vty.vertCat
       [ Vty.string Vty.defAttr "Inspectors:"
       , imagePlayersTasks
-      , Vty.string Vty.defAttr ""
+      , blank
       , Vty.string Vty.defAttr "Tasks:"
       , imageTasks
       ]
@@ -625,7 +628,7 @@ draw btns phase = case phase of
       [ Vty.string (Vty.defAttr `Vty.withForeColor` nameColor i) playerName
       , Vty.string Vty.defAttr $ " (joystick " ++ show playerJoystick ++ ", "
       , Vty.string (color playerJoystick playerYes) $ show playerYes
-      , Vty.string Vty.defAttr $ " for yes, "
+      , Vty.string Vty.defAttr " for yes, "
       , Vty.string (color playerJoystick playerNo) $ show playerNo
       , Vty.string Vty.defAttr " for no)"
       ]
@@ -685,10 +688,8 @@ main = do
         [code, "NO"] -> do
           putMVar apiEvent (T.unpack code, False)
           f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
-        [] -> do
-          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html")] remote
-        _ -> do
-          f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
+        [] -> f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html" )] remote
+        _  -> f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
 
     let loop :: Phase -> [Set.Set Button360] -> IO ()
         loop phase prev = do
