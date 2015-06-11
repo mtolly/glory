@@ -4,6 +4,8 @@ author:               Michael Tolly
 maintainer:           miketolly@gmail.com
 build-type:           Simple
 cabal-version:        >= 1.10
+extra-source-files:
+  remote/index.html
 
 executable glory
   main-is:              Main.hs
@@ -20,8 +22,8 @@ executable glory
     , vty >= 5.2.9
     , random-shuffle >= 0.0.4
     , random
+    , MonadRandom
     , time
-
     , warp
     , wai
     , http-types
