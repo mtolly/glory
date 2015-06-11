@@ -35,6 +35,7 @@ draw btns phase = case phase of
       1 -> "1 inspector ready."
       n -> show n ++ " inspectors ready."
     ]
+  ConfirmQuit{..} -> Vty.string Vty.defAttr "Are you sure you want to quit? (y/n)"
   AddPlayerYes{..} -> Vty.vertCat
     [ playersAndTasks
     , blank

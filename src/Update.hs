@@ -32,7 +32,7 @@ update sdl keys api phase = case phase of
     | pressedChar '3' -> next AddPlayerYes{..}
     | pressedChar 'a' -> next AddPlayerAPI{ phaseName = "", .. }
     | pressedChar '=' -> next AddTask{ phaseNewTask = "", .. }
-    | pressedKey Vty.KEsc -> return Nothing
+    | pressedKey Vty.KEsc -> next ConfirmQuit{..}
     | pressedKey Vty.KDel && not (null phasePlayers)
       -> next DeletePlayer{ phaseIndex = 0, .. }
     | pressedChar '-' && not (null phaseTasks)
@@ -61,6 +61,10 @@ update sdl keys api phase = case phase of
       phaseIndex <- getRandomR (0, length phasePlayers - 1)
       next ChosenOne{..}
     | otherwise -> next phase
+  ConfirmQuit{..}
+    | pressedChar 'y' -> return Nothing
+    | pressedChar 'n' -> next Waiting{..}
+    | otherwise       -> next phase
   AddPlayerYes{..} -> next $ case filter (not . inUse) sdl of
     (phaseJoystick, phaseYes) : _ -> AddPlayerNo{..}
     []  | pressedKey Vty.KEsc     -> Waiting{..}

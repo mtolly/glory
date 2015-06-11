@@ -14,6 +14,10 @@ data Phase
     { phasePlayers :: [Player]
     , phaseTasks   :: [(Task, [Int])]
     }
+  | ConfirmQuit
+    { phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
+    }
   | AddPlayerYes
     { phasePlayers :: [Player]
     , phaseTasks   :: [(Task, [Int])]
