@@ -145,7 +145,8 @@ main = do
 
     let loop :: Phase -> [Set.Set Button360] -> IO ()
         loop phase prev = do
-          Vty.update vty $ Vty.picForImage $ draw prev phase
+          (w, h) <- Vty.displayBounds $ Vty.outputIface vty
+          Vty.update vty $ draw w h prev phase
           liftIO $ threadDelay 5000
           sdlEvents <- untilNothing pollSDL
           vtyEvents <- untilNothing $ tryTakeMVar vtyEvent

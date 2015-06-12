@@ -1,15 +1,51 @@
 {-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE RecordWildCards   #-}
 module Draw (draw) where
 
-import           Data.Char    (toLower)
-import           Data.Fixed   (Milli)
-import           Data.Maybe   (fromMaybe)
-import qualified Data.Set     as Set
-import qualified Data.Time    as Time
-import qualified Graphics.Vty as Vty
+import           Data.Char       (toLower)
+import           Data.Fixed      (Milli)
+import           Data.List       (intercalate)
+import           Data.Maybe      (fromMaybe)
+import qualified Data.Set        as Set
+import qualified Data.Time       as Time
+import qualified Graphics.UI.SDL as SDL
+import qualified Graphics.Vty    as Vty
 
 import           Core
+
+data Align
+  = AlignL
+  | AlignC
+  | AlignR
+  deriving (Eq, Ord, Show, Read, Enum, Bounded)
+
+align :: Align -> Int -> Vty.Attr -> Vty.Image -> Vty.Image
+align alignment w style img = if
+  | Vty.imageWidth img <= w -> let
+    pad = w - Vty.imageWidth img
+    padL = case alignment of
+      AlignL -> 0
+      AlignC -> pad `quot` 2
+      AlignR -> pad
+    padR = pad - padL
+    in Vty.horizCat
+      [ Vty.string style $ replicate padL ' '
+      , img
+      , Vty.string style $ replicate padR ' '
+      ]
+  | w < 4 -> case alignment of
+    AlignR -> Vty.cropLeft  w img
+    _      -> Vty.cropRight w img
+  | otherwise -> Vty.horizCat $ case alignment of
+    AlignR ->
+      [ Vty.string style "..."
+      , Vty.cropLeft (w - 3) img
+      ]
+    _ ->
+      [ Vty.cropRight (w - 3) img
+      , Vty.string style "..."
+      ]
 
 -- | not srs, just sufficient
 cyrillicize :: String -> String
@@ -27,21 +63,81 @@ getPlayersTasks p = do
   let tasks = [ task | (task, ixs) <- phaseTasks p, ix `elem` ixs ]
   return (selected == Just ix, player, tasks)
 
-draw :: [Set.Set Button360] -> Phase -> Vty.Image
-draw btns phase = case phase of
-  Waiting{..} -> Vty.vertCat
-    [ playersAndTasks
-    , Vty.pad 0 1 0 0 $ Vty.string Vty.defAttr $ case length phasePlayers of
-      1 -> "1 inspector ready."
-      n -> show n ++ " inspectors ready."
+-- | Avoiding dumb type default warnings
+rgb :: Int -> Int -> Int -> Vty.Color
+rgb = Vty.rgbColor
+
+on :: Vty.Color -> Vty.Color -> Vty.Attr
+fg `on` bg = Vty.defAttr `Vty.withForeColor` fg `Vty.withBackColor` bg
+
+mainScreen :: Int -> Int -> String -> Vty.Image
+mainScreen w h message = Vty.vertCat
+  [ Vty.charFill style ' ' w 1
+  , align AlignC w style $ Vty.string style "GLORIOUS LABOR REGISTRY OF RUSTLER'S KEEP"
+  , Vty.charFill style ' ' w $ h - 4
+  , align AlignC w style $ Vty.string style message
+  , Vty.charFill style ' ' w 1
+  ] where style = rgb 255 255 255 `on` rgb 128 0 0
+
+showButton :: [Set.Set Button360] -> Vty.Attr -> SDL.JoystickID -> Button360 -> Vty.Image
+showButton btns style joy btn = Vty.string style' $ show btn
+  where isPressed = case drop (fromIntegral joy) btns of
+          []      -> False
+          set : _ -> Set.member btn set
+        style' = if isPressed then style `Vty.withForeColor` Vty.green else style
+
+registeredWorker :: Int -> [Set.Set Button360] -> Vty.Attr -> Player -> [Task] -> Vty.Image
+registeredWorker w btns style player tasks = Vty.horizCat
+  [ spaceColumn
+  , Vty.vertCat
+    [ align AlignL (w - 2) style $ let
+      nameStyle = style `Vty.withForeColor` Vty.red
+      in case player of
+        PlayerJoy{..} -> Vty.horizCat
+          [ Vty.string nameStyle playerName
+          , Vty.string style $ ": joystick " ++ show playerJoystick ++ ", "
+          , showButton btns style playerJoystick playerYes
+          , Vty.string style " for yes, "
+          , showButton btns style playerJoystick playerNo
+          , Vty.string style " for no"
+          ]
+        PlayerAPI{..} -> Vty.horizCat
+          [ Vty.string nameStyle playerName
+          , Vty.string style ": web code "
+          , Vty.string (style `Vty.withForeColor` Vty.blue) playerCode
+          ]
+    , align AlignL (w - 2) style $ Vty.string style $ case tasks of
+      [] -> "Idle worker"
+      _  -> intercalate ", " tasks
     ]
-  ConfirmQuit{..} -> Vty.string Vty.defAttr "Are you sure you want to quit? (y/n)"
-  AddPlayerYes{..} -> Vty.vertCat
+  , spaceColumn
+  ] where spaceColumn = Vty.charFill style ' ' 1 (2 :: Int)
+
+draw :: Int -> Int -> [Set.Set Button360] -> Phase -> Vty.Picture
+draw _w _h btns phase = case phase of
+  Waiting{..} -> Vty.Picture
+    { Vty.picCursor = Vty.NoCursor
+    , Vty.picBackground = Vty.ClearBackground
+    , Vty.picLayers =
+      [ Vty.vertCat $ Vty.backgroundFill _w 3 : do
+        (bg, (sel, p, tasks)) <- zip (cycle [rgb 255 255 255, rgb 200 200 200]) $ getPlayersTasks phase
+        let style = Vty.defAttr
+              `Vty.withForeColor` Vty.black
+              `Vty.withBackColor` if sel then Vty.cyan else bg
+            img = registeredWorker (_w - 2) btns style p tasks
+        return $ Vty.horizCat [Vty.backgroundFill (1 :: Int) 1, img]
+      , mainScreen _w _h $ case length phasePlayers of
+          1 -> "1 inspector ready."
+          n -> show n ++ " inspectors ready."
+      ]
+    }
+  ConfirmQuit{..} -> Vty.picForImage $ Vty.string Vty.defAttr "Are you sure you want to quit? (y/n)"
+  AddPlayerYes{..} -> Vty.picForImage $ Vty.vertCat
     [ playersAndTasks
     , blank
     , Vty.string Vty.defAttr "Adding new controller inspector. Press YES button"
     ]
-  AddPlayerNo{..} -> Vty.vertCat
+  AddPlayerNo{..} -> Vty.picForImage $ Vty.vertCat
     [ playersAndTasks
     , blank
     , Vty.horizCat
@@ -50,7 +146,7 @@ draw btns phase = case phase of
       , Vty.string Vty.defAttr " for YES. Press NO button"
       ]
     ]
-  AddPlayerName{..} -> Vty.vertCat
+  AddPlayerName{..} -> Vty.picForImage $ Vty.vertCat
     [ playersAndTasks
     , blank
     , Vty.horizCat
@@ -65,7 +161,7 @@ draw btns phase = case phase of
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseName
     , blank -- reset color
     ]
-  AddPlayerAPI{..} -> Vty.vertCat
+  AddPlayerAPI{..} -> Vty.picForImage $ Vty.vertCat
     [ playersAndTasks
     , blank
     , Vty.string Vty.defAttr "Adding new API inspector. Enter name"
@@ -74,12 +170,21 @@ draw btns phase = case phase of
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseName
     , blank -- reset color
     ]
-  DeletePlayer{..} -> Vty.vertCat
-    [ playersAndTasks
-    , blank
-    , Vty.string Vty.defAttr "Remove which inspector from duty?"
-    ]
-  AddTask{..} -> Vty.vertCat
+  DeletePlayer{..} -> Vty.Picture
+    { Vty.picCursor = Vty.NoCursor
+    , Vty.picBackground = Vty.ClearBackground
+    , Vty.picLayers =
+      [ Vty.vertCat $ Vty.backgroundFill _w 3 : do
+        (bg, (sel, p, tasks)) <- zip (cycle [rgb 255 255 255, rgb 200 200 200]) $ getPlayersTasks phase
+        let style = Vty.defAttr
+              `Vty.withForeColor` Vty.black
+              `Vty.withBackColor` if sel then Vty.cyan else bg
+            img = registeredWorker (_w - 2) btns style p tasks
+        return $ Vty.horizCat [Vty.backgroundFill (1 :: Int) 1, img]
+      , mainScreen _w _h "Choose a worker to remove from duty."
+      ]
+    }
+  AddTask{..} -> Vty.picForImage $ Vty.vertCat
     [ playersAndTasks
     , blank
     , Vty.string Vty.defAttr "Enter new task name"
@@ -87,24 +192,24 @@ draw btns phase = case phase of
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $ cyrillicize phaseNewTask
     , blank -- reset color
     ]
-  DeleteTask{..} -> Vty.vertCat
+  DeleteTask{..} -> Vty.picForImage $ Vty.vertCat
     [ playersAndTasks
     , blank
     , Vty.string Vty.defAttr "Remove which task?"
     ]
-  Voting{..} -> Vty.vertCat
+  Voting{..} -> Vty.picForImage $ Vty.vertCat
     [ Vty.string Vty.defAttr $ let
       remaining = phaseVoteLength - Time.diffUTCTime phaseTimeNow phaseTimeStart
       in "Vote now! " ++ showTime remaining ++ " seconds left"
     , blank
     , showVote phasePlayersYes phasePlayersNo
     ]
-  VoteComplete{..} -> Vty.vertCat
+  VoteComplete{..} -> Vty.picForImage $ Vty.vertCat
     [ Vty.string Vty.defAttr "Voting is over."
     , blank
     , showVote phasePlayersYes phasePlayersNo
     ]
-  Inspection{..} -> Vty.vertCat
+  Inspection{..} -> Vty.picForImage $ Vty.vertCat
     [ Vty.string Vty.defAttr $ if inspectionDone then "Inspection complete." else "Inspection is underway."
     , Vty.string Vty.defAttr $ "Time: " ++ if inspectionDone
       then let
@@ -128,7 +233,7 @@ draw btns phase = case phase of
           ]
     , blank -- reset color
     ] where inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
-  ChosenOne{..} -> Vty.vertCat
+  ChosenOne{..} -> Vty.picForImage $ Vty.vertCat
     [ Vty.string Vty.defAttr "A player has been chosen!"
     , blank
     , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.red `Vty.withForeColor` Vty.white) $
@@ -194,8 +299,6 @@ draw btns phase = case phase of
       6 -> rgb 148 78 229
       7 -> rgb 239 95 239
       _ -> rgb 170 132 99
-      where rgb :: Int -> Int -> Int -> Vty.Color
-            rgb = Vty.rgbColor
     color joy btn = if Set.member btn $ btns !! fromIntegral joy
       then Vty.defAttr `Vty.withForeColor` case btn of
         A -> Vty.green
