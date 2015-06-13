@@ -168,42 +168,14 @@ draw _w _h btns phase = case phase of
     , blank
     , Vty.string Vty.defAttr "Remove which task?"
     ]
-  Voting{..} -> Vty.picForImage $ Vty.vertCat
-    [ Vty.string Vty.defAttr $ let
-      remaining = phaseVoteLength - Time.diffUTCTime phaseTimeNow phaseTimeStart
-      in "Vote now! " ++ showTime remaining ++ " seconds left"
-    , blank
-    , showVote phasePlayersYes phasePlayersNo
-    ]
-  VoteComplete{..} -> Vty.picForImage $ Vty.vertCat
-    [ Vty.string Vty.defAttr "Voting is over."
-    , blank
-    , showVote phasePlayersYes phasePlayersNo
-    ]
-  Inspection{..} -> Vty.picForImage $ Vty.vertCat
-    [ Vty.string Vty.defAttr $ if inspectionDone then "Inspection complete." else "Inspection is underway."
-    , Vty.string Vty.defAttr $ "Time: " ++ if inspectionDone
-      then let
-        allTimes = [ t | (_, t) <- phasePlayersGood ++ phasePlayersBad ]
-        in showTime $ Time.diffUTCTime (foldr max phaseTimeStart allTimes) phaseTimeStart
-      else showTime $ Time.diffUTCTime phaseTimeNow phaseTimeStart
-    , blank
-    , Vty.vertCat $ flip map (zip [0..] phasePlayers) $ \(i, player) -> let
-        good = [ time | (j, time) <- phasePlayersGood, i == j ]
-        bad  = [ time | (j, time) <- phasePlayersBad , i == j ]
-        tasks = [ task | (task, ixs) <- phaseTasks, i `elem` ixs ]
-        attr = case (good, bad) of
-          ([]   , []   ) -> Vty.defAttr
-          (_ : _, _    ) -> Vty.defAttr `Vty.withForeColor` Vty.green
-          (_    , _ : _) -> Vty.defAttr `Vty.withForeColor` Vty.white `Vty.withBackColor` Vty.red
-        in Vty.vertCat
-          [ Vty.string attr $ case good ++ bad of
-            time : _ -> simpleShowPlayer player ++ " (" ++ showTime (Time.diffUTCTime time phaseTimeStart) ++ ")"
-            []       -> simpleShowPlayer player
-          , Vty.vertCat [ Vty.string attr $ "  " ++ task | task <- tasks ]
-          ]
-    , blank -- reset color
-    ] where inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
+  Voting{..} -> flip standardScreen playerList $ let
+    remaining = phaseVoteLength - Time.diffUTCTime phaseTimeNow phaseTimeStart
+    in "Vote now! " ++ showTime remaining ++ " left"
+  VoteComplete{..} -> standardScreen "Voting is over." playerList
+  Inspection{..} -> flip standardScreen playerList $ let
+    inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
+    in if inspectionDone then "Inspection complete."
+      else "Inspection is underway. " ++ showTime (Time.diffUTCTime phaseTimeNow phaseTimeStart)
   ChosenOne{..} -> standardScreen "Your name was pulled!" playerList
   where
     countMessage = case length $ phasePlayers phase of
@@ -220,36 +192,31 @@ draw _w _h btns phase = case phase of
       , mainScreen _w _h msg
       ]
     twoToneList = do
-      let selected = case phase of
-            DeletePlayer{..} -> Just phaseIndex
-            ChosenOne{..}    -> Just phaseIndex
-            DeleteTask{..}   -> Just phaseIndex
-            _                -> Nothing
       (ix, bg) <- zip [0..] $ cycle [rgb 255 255 255, rgb 200 200 200]
-      return $ Vty.black `on` if selected == Just ix then Vty.cyan else bg
+      return $ Vty.black `on` case phase of
+        DeletePlayer{..} -> if phaseIndex == ix then Vty.cyan else bg
+        ChosenOne{..}    -> if phaseIndex == ix then Vty.cyan else bg
+        DeleteTask{..}   -> if phaseIndex == ix then Vty.cyan else bg
+        Voting{..}       -> if
+          | ix `elem` phasePlayersYes -> rgb 100 255 100
+          | ix `elem` phasePlayersNo  -> rgb 255 100 100
+          | otherwise                 -> bg
+        VoteComplete{..} -> if
+          | ix `elem` phasePlayersYes -> rgb 100 255 100
+          | ix `elem` phasePlayersNo  -> rgb 255 100 100
+          | otherwise                 -> bg
+        Inspection{..}   -> if
+          | ix `elem` map fst phasePlayersGood -> rgb 100 255 100
+          | ix `elem` map fst phasePlayersBad  -> rgb 255 100 100
+          | otherwise                          -> bg
+        _                -> bg
     playerList :: [Vty.Attr -> Vty.Image]
     playerList = do
       (p, tasks) <- getPlayersTasks phase
       return $ \style -> workerBox (_w - 2) btns style p tasks
     blank = Vty.string Vty.defAttr ""
-    showVote playersYes playersNo = Vty.vertCat
-      [ Vty.string (Vty.defAttr `Vty.withForeColor` Vty.green) $ "YEA (" ++ show (length playersYes) ++ "):"
-      , Vty.vertCat $ flip map playersYes $ \ix ->
-          Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
-      , blank
-      , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.red) $ "NAY (" ++ show (length playersNo) ++ "):"
-      , Vty.vertCat $ flip map playersNo $ \ix ->
-          Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
-      , blank
-      , Vty.string (Vty.defAttr `Vty.withForeColor` Vty.yellow) $ "??? (" ++ show (length undecided) ++ "):"
-      , Vty.vertCat $ flip map undecided $ \ix ->
-          Vty.string Vty.defAttr $ "  " ++ simpleShowPlayer (phasePlayers phase !! ix)
-      ] where undecided = [ i | i <- [0 .. length (phasePlayers phase) - 1], not $ elem i playersYes || elem i playersNo ]
-    simpleShowPlayer = \case
-      PlayerAPI{..} -> playerName ++ " (" ++ playerCode ++ ")"
-      PlayerJoy{..} -> playerName ++ " (joy " ++ show playerJoystick ++ ", " ++ show playerYes ++ ", " ++ show playerNo ++ ")"
     showTime :: Time.NominalDiffTime -> String
-    showTime t = show (realToFrac t :: Milli)
+    showTime t = show (realToFrac t :: Milli) ++ "s"
     taskList = Vty.vertCat
       [ Vty.string Vty.defAttr "Tasks:"
       , imageTasks
