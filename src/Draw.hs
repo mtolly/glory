@@ -95,6 +95,13 @@ workerBox w btns style player tasks = genWorkerBox w style img1 img2 where
     _  -> intercalate ", " tasks
   nameStyle = style `Vty.withForeColor` Vty.red
 
+taskBox :: Int -> Vty.Attr -> String -> Vty.Image
+taskBox w style task = Vty.horizCat
+  [ spaceColumn
+  , align AlignL (w - 2) style $ Vty.string style task
+  , spaceColumn
+  ] where spaceColumn = Vty.charFill style ' ' 1 (1 :: Int)
+
 newJoystickBox :: Int -> Vty.Attr -> Vty.Image
 newJoystickBox w style = genWorkerBox w style img1 img2 where
   img1 = Vty.string nameStyle "New inspector"
@@ -156,18 +163,9 @@ draw _w _h btns phase = case phase of
   AddPlayerAPI{..} -> standardScreen countMessage $ playerList ++
     [\style -> newAPINameBox (_w - 2) style phaseName]
   DeletePlayer{} -> standardScreen "Choose a worker to remove from duty." playerList
-  AddTask{..} -> Vty.picForImage $ Vty.vertCat
-    [ taskList
-    , blank
-    , Vty.string Vty.defAttr "Enter new task name"
-    , Vty.string (Vty.defAttr `Vty.withBackColor` Vty.cyan `Vty.withForeColor` Vty.white) phaseNewTask
-    , blank -- reset color
-    ]
-  DeleteTask{..} -> Vty.picForImage $ Vty.vertCat
-    [ taskList
-    , blank
-    , Vty.string Vty.defAttr "Remove which task?"
-    ]
+  AddTask{..} -> standardScreen "Enter the new task to be performed." $ taskList ++
+    [\style -> taskBox (_w - 2) style phaseNewTask]
+  DeleteTask{..} -> standardScreen "Choose a task to remove." taskList
   Voting{..} -> flip standardScreen playerList $ let
     remaining = phaseVoteLength - Time.diffUTCTime phaseTimeNow phaseTimeStart
     in "Vote now! " ++ showTime remaining ++ " left"
@@ -214,17 +212,9 @@ draw _w _h btns phase = case phase of
     playerList = do
       (p, tasks) <- getPlayersTasks phase
       return $ \style -> workerBox (_w - 2) btns style p tasks
-    blank = Vty.string Vty.defAttr ""
+    taskList :: [Vty.Attr -> Vty.Image]
+    taskList = do
+      (task, _) <- phaseTasks phase
+      return $ \style -> taskBox (_w - 2) style task
     showTime :: Time.NominalDiffTime -> String
     showTime t = show (realToFrac t :: Milli) ++ "s"
-    taskList = Vty.vertCat
-      [ Vty.string Vty.defAttr "Tasks:"
-      , imageTasks
-      ]
-    imageTasks = Vty.vertCat $ zipWith taskLine [0..] $ map fst $ phaseTasks phase
-    taskLine i task = Vty.horizCat
-      [ Vty.string Vty.defAttr $ case phase of
-          DeleteTask{..} | phaseIndex == i -> "* "
-          _                                -> "  "
-      , Vty.string Vty.defAttr task
-      ]

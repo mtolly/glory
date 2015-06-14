@@ -6,6 +6,7 @@ module Update (update) where
 import           Control.Applicative   ((<$>))
 import           Control.Monad         (guard, replicateM)
 import           Control.Monad.Random  (MonadRandom, getRandomR)
+import           Data.Maybe            (mapMaybe)
 import qualified Data.Time             as Time
 import qualified Graphics.UI.SDL       as SDL
 import qualified Graphics.Vty          as Vty
@@ -132,6 +133,13 @@ update sdl keys api phase = case phase of
     | pressedKey Vty.KEnter -> Waiting
       { phasePlayers = case splitAt phaseIndex phasePlayers of
         (xs, ys) -> xs ++ drop 1 ys
+      , phaseTasks = do
+        let adjustIndex i = case compare i phaseIndex of
+              EQ -> Nothing
+              LT -> Just i
+              GT -> Just $ i - 1
+        (task, playerIndices) <- phaseTasks
+        return (task, mapMaybe adjustIndex playerIndices)
       , ..
       }
     | otherwise -> phase
