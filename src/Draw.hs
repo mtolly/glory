@@ -86,12 +86,14 @@ workerBox w btns style player tasks time = genWorkerBox w style img1 img2 where
       , Vty.string style " for yes, "
       , showButton btns style playerJoystick playerNo
       , Vty.string style " for no"
+      , citations
       , timeParens
       ]
     PlayerAPI{..} -> Vty.horizCat
       [ Vty.string nameStyle playerName
       , Vty.string style ": web code "
       , Vty.string (style `Vty.withForeColor` Vty.blue) playerCode
+      , citations
       , timeParens
       ]
   img2 = Vty.string style $ case tasks of
@@ -101,6 +103,9 @@ workerBox w btns style player tasks time = genWorkerBox w style img1 img2 where
   timeParens = Vty.string style $ case time of
     Nothing -> ""
     Just t  -> " (" ++ showTime t ++ ")"
+  citations = Vty.string style $ case playerCitations player of
+    0 -> ""
+    n -> ' ' : replicate n '!'
 
 taskBox :: Int -> Vty.Attr -> String -> Vty.Image
 taskBox w style task = Vty.horizCat
@@ -199,6 +204,7 @@ draw _w _h btns phase = case phase of
       then "Inspection complete. Took " ++ showTime lastTime
       else "Inspection is underway. " ++ showTime (Time.diffUTCTime phaseTimeNow phaseTimeStart) ++ " elapsed"
   ChosenOne{..} -> standardScreen "Your name was pulled!" playerList
+  Citation{..} -> standardScreen "Choose a worker to receive a citation." playerList
   where
     countMessage = case length $ phasePlayers phase of
       1 -> "1 inspector ready."
@@ -218,6 +224,7 @@ draw _w _h btns phase = case phase of
       return $ Vty.black `on` case phase of
         DeletePlayer{..} -> if phaseIndex == ix then Vty.cyan else bg
         ChosenOne{..}    -> if phaseIndex == ix then Vty.cyan else bg
+        Citation{..}     -> if phaseIndex == ix then Vty.cyan else bg
         DeleteTask{..}   -> if phaseIndex == ix then Vty.cyan else bg
         Voting{..}       -> if
           | ix `elem` phasePlayersYes -> rgb 100 255 100

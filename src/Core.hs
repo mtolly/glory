@@ -84,18 +84,25 @@ data Phase
     , phasePlayers :: [Player]
     , phaseTasks   :: [(Task, [Int])]
     }
+  | Citation
+    { phaseIndex   :: Int
+    , phasePlayers :: [Player]
+    , phaseTasks   :: [(Task, [Int])]
+    }
   deriving (Eq, Ord, Show)
 
 data Player
   = PlayerJoy
-    { playerName     :: String
-    , playerJoystick :: SDL.JoystickID
-    , playerYes      :: Button360
-    , playerNo       :: Button360
+    { playerName      :: String
+    , playerCitations :: Int
+    , playerJoystick  :: SDL.JoystickID
+    , playerYes       :: Button360
+    , playerNo        :: Button360
     }
   | PlayerAPI
-    { playerName :: String
-    , playerCode :: String
+    { playerName      :: String
+    , playerCitations :: Int
+    , playerCode      :: String
     }
   deriving (Eq, Ord, Show, Read)
 

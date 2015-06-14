@@ -62,6 +62,8 @@ update sdl keys api phase = case phase of
     | pressedChar '1' && not (null phasePlayers) -> do
       phaseIndex <- getRandomR (0, length phasePlayers - 1)
       next ChosenOne{..}
+    | pressedChar 'c' && not (null phasePlayers)
+      -> next Citation{ phaseIndex = 0, .. }
     | otherwise -> next phase
   ConfirmQuit{..}
     | pressedChar 'y' -> return Nothing
@@ -89,10 +91,11 @@ update sdl keys api phase = case phase of
       _           -> id
     name' = foldl (flip ($)) phaseName funs
     newPlayer = PlayerJoy
-      { playerName     = name'
-      , playerJoystick = phaseJoystick
-      , playerYes      = phaseYes
-      , playerNo       = phaseNo
+      { playerName      = name'
+      , playerCitations = 0
+      , playerJoystick  = phaseJoystick
+      , playerYes       = phaseYes
+      , playerNo        = phaseNo
       }
     in if
       | pressedKey Vty.KEnter ->
@@ -108,8 +111,9 @@ update sdl keys api phase = case phase of
     newPlayer = do
       code <- newCode
       return PlayerAPI
-        { playerName = name'
-        , playerCode = code
+        { playerName      = name'
+        , playerCitations = 0
+        , playerCode      = code
         }
     usedCodes = do
       PlayerAPI{..} <- phasePlayers
@@ -216,6 +220,21 @@ update sdl keys api phase = case phase of
   ChosenOne{..} -> next $ if
     | pressedKey Vty.KEsc -> Waiting{..}
     | otherwise           -> phase
+  Citation{..} -> next $ if
+    | pressedKey Vty.KUp    ->
+      Citation{ phaseIndex = max 0 $ phaseIndex - 1, .. }
+    | pressedKey Vty.KDown  ->
+      Citation{ phaseIndex = min (length phasePlayers - 1) $ phaseIndex + 1, .. }
+    | pressedKey Vty.KEsc   -> Waiting{..}
+    | pressedKey Vty.KEnter -> Waiting
+      { phasePlayers = case splitAt phaseIndex phasePlayers of
+        (xs, player : ys) -> let
+          cited = player{ playerCitations = playerCitations player + 1 }
+          in xs ++ [cited] ++ ys
+        (_ , []         ) -> phasePlayers -- shouldn't happen
+      , ..
+      }
+    | otherwise -> phase
   where
     next = return . Just
     pressedChar c = Vty.KChar c `elem` keys
