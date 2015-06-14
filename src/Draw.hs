@@ -3,6 +3,8 @@
 {-# LANGUAGE RecordWildCards   #-}
 module Draw (draw) where
 
+import           Control.Monad   (guard)
+import           Data.Maybe      (listToMaybe)
 import           Data.Fixed      (Milli)
 import           Data.List       (intercalate)
 import qualified Data.Set        as Set
@@ -74,8 +76,8 @@ showButton btns style joy btn = Vty.string style' $ show btn
           set : _ -> Set.member btn set
         style' = if isPressed then style `Vty.withForeColor` Vty.green else style
 
-workerBox :: Int -> [Set.Set Button360] -> Vty.Attr -> Player -> [Task] -> Vty.Image
-workerBox w btns style player tasks = genWorkerBox w style img1 img2 where
+workerBox :: Int -> [Set.Set Button360] -> Vty.Attr -> Player -> [Task] -> Maybe Time.NominalDiffTime -> Vty.Image
+workerBox w btns style player tasks time = genWorkerBox w style img1 img2 where
   img1 = case player of
     PlayerJoy{..} -> Vty.horizCat
       [ Vty.string nameStyle playerName
@@ -84,16 +86,21 @@ workerBox w btns style player tasks = genWorkerBox w style img1 img2 where
       , Vty.string style " for yes, "
       , showButton btns style playerJoystick playerNo
       , Vty.string style " for no"
+      , timeParens
       ]
     PlayerAPI{..} -> Vty.horizCat
       [ Vty.string nameStyle playerName
       , Vty.string style ": web code "
       , Vty.string (style `Vty.withForeColor` Vty.blue) playerCode
+      , timeParens
       ]
   img2 = Vty.string style $ case tasks of
     [] -> "Idle worker"
     _  -> intercalate ", " tasks
   nameStyle = style `Vty.withForeColor` Vty.red
+  timeParens = Vty.string style $ case time of
+    Nothing -> ""
+    Just t  -> " (" ++ showTime t ++ ")"
 
 taskBox :: Int -> Vty.Attr -> String -> Vty.Image
 taskBox w style task = Vty.horizCat
@@ -178,11 +185,19 @@ draw _w _h btns phase = case phase of
   Voting{..} -> flip standardScreen playerList $ let
     remaining = phaseVoteLength - Time.diffUTCTime phaseTimeNow phaseTimeStart
     in "Vote now! " ++ showTime remaining ++ " left"
-  VoteComplete{..} -> standardScreen "Voting is over." playerList
+  VoteComplete{..} -> flip standardScreen playerList $ unwords
+    [ "Voting is over."
+    , show y ++ " yea,"
+    , show n ++ " nay,"
+    , show (length phasePlayers - y - n) ++ " abstained."
+    ] where y = length phasePlayersYes
+            n = length phasePlayersNo
   Inspection{..} -> flip standardScreen playerList $ let
     inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
-    in if inspectionDone then "Inspection complete."
-      else "Inspection is underway. " ++ showTime (Time.diffUTCTime phaseTimeNow phaseTimeStart)
+    lastTime = Time.diffUTCTime (foldr max phaseTimeStart $ map snd $ phasePlayersGood ++ phasePlayersBad) phaseTimeStart
+    in if inspectionDone
+      then "Inspection complete. Took " ++ showTime lastTime
+      else "Inspection is underway. " ++ showTime (Time.diffUTCTime phaseTimeNow phaseTimeStart) ++ " elapsed"
   ChosenOne{..} -> standardScreen "Your name was pulled!" playerList
   where
     countMessage = case length $ phasePlayers phase of
@@ -219,11 +234,18 @@ draw _w _h btns phase = case phase of
         _                -> bg
     playerList :: [Vty.Attr -> Vty.Image]
     playerList = do
-      (p, tasks) <- getPlayersTasks phase
-      return $ \style -> workerBox (_w - 2) btns style p tasks
+      (i, (p, tasks)) <- zip [0..] $ getPlayersTasks phase
+      let time = case phase of
+            Inspection{..} -> listToMaybe $ do
+              (j, playerTime) <- phasePlayersGood ++ phasePlayersBad
+              guard $ i == j
+              return $ Time.diffUTCTime playerTime phaseTimeStart
+            _ -> Nothing
+      return $ \style -> workerBox (_w - 2) btns style p tasks time
     taskList :: [Vty.Attr -> Vty.Image]
     taskList = do
       (task, _) <- phaseTasks phase
       return $ \style -> taskBox (_w - 2) style task
-    showTime :: Time.NominalDiffTime -> String
-    showTime t = show (realToFrac t :: Milli) ++ "s"
+
+showTime :: Time.NominalDiffTime -> String
+showTime t = show (realToFrac t :: Milli) ++ "s"

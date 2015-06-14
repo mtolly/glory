@@ -20,9 +20,10 @@ assignTasks :: (MonadRandom m) => Phase -> m Phase
 assignTasks p = do
   tasks   <- shuffleM $ map fst             $ phaseTasks   p
   players <- shuffleM $ zipWith const [0..] $ phasePlayers p
-  let assignment = if length tasks < length players
-        then zip (cycle tasks) players
-        else zip tasks (cycle players)
+  let assignment = if
+        | null players || null tasks    -> []
+        | length tasks < length players -> zip (cycle tasks) players
+        | otherwise                     -> zip tasks (cycle players)
       indexesFor task = [ i | (t, i) <- assignment, t == task ]
       newMapping = [ (t, indexesFor t) | (t, _) <- phaseTasks p ]
   return $ p { phaseTasks = newMapping }
