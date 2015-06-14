@@ -125,7 +125,7 @@ newJoyNameBox
 newJoyNameBox w btns style joy yes no name = genWorkerBox w style img1 img2 where
   img1 = Vty.horizCat
     [ Vty.string nameStyle name
-    , Vty.string style $ ": joystick " ++ show joy ++ ", "
+    , Vty.string style $ " : joystick " ++ show joy ++ ", "
     , showButton btns style joy yes
     , Vty.string style " for yes, "
     , showButton btns style joy no
@@ -138,7 +138,7 @@ newAPINameBox :: Int -> Vty.Attr -> String -> Vty.Image
 newAPINameBox w style name = genWorkerBox w style img1 img2 where
   img1 = Vty.horizCat
     [ Vty.string nameStyle name
-    , Vty.string style $ ": web code "
+    , Vty.string style $ " : web code "
     , Vty.string (style `Vty.withForeColor` Vty.blue) "????"
     ]
   img2 = Vty.string style "Type inspector name"
@@ -158,13 +158,22 @@ draw _w _h btns phase = case phase of
   AddPlayerYes{..} -> standardScreen countMessage $ playerList ++ [newJoystickBox $ _w - 2]
   AddPlayerNo{..} -> standardScreen countMessage $ playerList ++
     [\style -> newNoBox (_w - 2) btns style phaseJoystick phaseYes]
-  AddPlayerName{..} -> standardScreen countMessage $ playerList ++
+  AddPlayerName{..} -> addCursor $ standardScreen countMessage $ playerList ++
     [\style -> newJoyNameBox (_w - 2) btns style phaseJoystick phaseYes phaseNo phaseName]
-  AddPlayerAPI{..} -> standardScreen countMessage $ playerList ++
+    where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
+          r = 3 + 2 * length phasePlayers
+          c = 2 + length phaseName
+  AddPlayerAPI{..} -> addCursor $ standardScreen countMessage $ playerList ++
     [\style -> newAPINameBox (_w - 2) style phaseName]
+    where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
+          r = 3 + 2 * length phasePlayers
+          c = 2 + length phaseName
   DeletePlayer{} -> standardScreen "Choose a worker to remove from duty." playerList
-  AddTask{..} -> standardScreen "Enter the new task to be performed." $ taskList ++
+  AddTask{..} -> addCursor $ standardScreen "Enter the new task to be performed." $ taskList ++
     [\style -> taskBox (_w - 2) style phaseNewTask]
+    where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
+          r = 3 + length phaseTasks
+          c = 2 + length phaseNewTask
   DeleteTask{..} -> standardScreen "Choose a task to remove." taskList
   Voting{..} -> flip standardScreen playerList $ let
     remaining = phaseVoteLength - Time.diffUTCTime phaseTimeNow phaseTimeStart
