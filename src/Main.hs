@@ -8,7 +8,7 @@ module Main (main) where
 import           Control.Applicative      ((<$>))
 import           Control.Concurrent       (forkIO, threadDelay)
 import           Control.Concurrent.MVar  (newEmptyMVar, putMVar, tryTakeMVar)
-import           Control.Exception        (bracket_)
+import           Control.Exception        (bracket, bracket_)
 import           Control.Monad            (forM, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy     as BL
@@ -117,6 +117,9 @@ untilNothing act = act >>= \case
   Just x  -> liftM (x :) $ untilNothing act
   Nothing -> return []
 
+withVty :: Vty.Config -> (Vty.Vty -> IO a) -> IO a
+withVty cfg = bracket (Vty.mkVty cfg) Vty.shutdown
+
 main :: IO ()
 main = do
   b <- hIsTerminalDevice stdout
@@ -126,38 +129,39 @@ main = do
     njoy <- SDL.numJoysticks
     joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
 
-    vty <- Vty.standardIOConfig >>= Vty.mkVty
-    vtyEvent <- newEmptyMVar
-    _ <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
+    cfg <- Vty.standardIOConfig
+    withVty cfg $ \vty -> do
+      vtyEvent <- newEmptyMVar
+      _ <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
 
-    apiEvent <- newEmptyMVar
-    remote <- BL.readFile "remote/index.html"
-    _ <- forkIO $ Warp.run 4200 $ \req f ->
-      case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
-        [code, "YES"] -> do
-          putMVar apiEvent (T.unpack code, True)
-          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received YES."
-        [code, "NO"] -> do
-          putMVar apiEvent (T.unpack code, False)
-          f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
-        [] -> f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html" )] remote
-        _  -> f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
+      apiEvent <- newEmptyMVar
+      remote <- BL.readFile "remote/index.html"
+      _ <- forkIO $ Warp.run 4200 $ \req f ->
+        case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
+          [code, "YES"] -> do
+            putMVar apiEvent (T.unpack code, True)
+            f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received YES."
+          [code, "NO"] -> do
+            putMVar apiEvent (T.unpack code, False)
+            f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
+          [] -> f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html" )] remote
+          _  -> f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
 
-    let loop :: Phase -> [Set.Set Button360] -> IO ()
-        loop phase prev = do
-          (w, h) <- Vty.displayBounds $ Vty.outputIface vty
-          Vty.update vty $ draw w h prev phase
-          liftIO $ threadDelay 5000
-          sdlEvents <- untilNothing pollSDL
-          vtyEvents <- untilNothing $ tryTakeMVar vtyEvent
-          apiEvents <- untilNothing $ tryTakeMVar apiEvent
-          let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
-              curr = foldr ($) prev $ map modifyButtons sdlEvents
-          update (newPresses prev curr) keys apiEvents phase >>= \case
-            Just phase' -> loop phase' curr
-            Nothing     -> Vty.shutdown vty
+      let loop :: Phase -> [Set.Set Button360] -> IO ()
+          loop phase prev = do
+            (w, h) <- Vty.displayBounds $ Vty.outputIface vty
+            Vty.update vty $ draw w h prev phase
+            liftIO $ threadDelay 5000
+            sdlEvents <- untilNothing pollSDL
+            vtyEvents <- untilNothing $ tryTakeMVar vtyEvent
+            apiEvents <- untilNothing $ tryTakeMVar apiEvent
+            let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
+                curr = foldr ($) prev $ map modifyButtons sdlEvents
+            update (newPresses prev curr) keys apiEvents phase >>= \case
+              Just phase' -> loop phase' curr
+              Nothing     -> return ()
 
-        startState = Waiting{ phasePlayers = [], phaseTasks = [] }
-        startButtons = map (const Set.empty) joys
+          startState = Waiting{ phasePlayers = [], phaseTasks = [] }
+          startButtons = map (const Set.empty) joys
 
-    loop startState startButtons
+      loop startState startButtons
