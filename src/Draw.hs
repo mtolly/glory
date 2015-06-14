@@ -60,14 +60,14 @@ rgb = Vty.rgbColor
 on :: Vty.Color -> Vty.Color -> Vty.Attr
 fg `on` bg = Vty.defAttr `Vty.withForeColor` fg `Vty.withBackColor` bg
 
-mainScreen :: Int -> Int -> String -> Vty.Image
-mainScreen w h message = Vty.vertCat
+mainScreen :: Int -> Int -> Vty.Attr -> String -> String -> Vty.Image
+mainScreen w h style header message = Vty.vertCat
   [ Vty.charFill style ' ' w 1
-  , align AlignC w style $ Vty.string style "GLORIOUS LABOR REGISTRY OF RUSTLER'S KEEP"
+  , align AlignC w style $ Vty.string style header
   , Vty.charFill style ' ' w $ h - 4
   , align AlignC w style $ Vty.string style message
   , Vty.charFill style ' ' w 1
-  ] where style = rgb 255 255 255 `on` rgb 128 0 0
+  ]
 
 showButton :: [Set.Set Button360] -> Vty.Attr -> SDL.JoystickID -> Button360 -> Vty.Image
 showButton btns style joy btn = Vty.string style' $ show btn
@@ -164,61 +164,67 @@ genWorkerBox w style line1 line2 = Vty.horizCat
   ] where spaceColumn = Vty.charFill style ' ' 1 (2 :: Int)
 
 draw :: Int -> Int -> [Set.Set Button360] -> Phase -> Vty.Picture
-draw _w _h btns phase = case phase of
-  Waiting{..} -> standardScreen countMessage playerList
-  ConfirmQuit{} -> standardScreen "Are you sure you want to quit? (y/n)" playerList
-  AddPlayerYes{..} -> standardScreen countMessage $ playerList ++ [newJoystickBox $ _w - 2]
-  AddPlayerNo{..} -> standardScreen countMessage $ playerList ++
-    [\style -> newNoBox (_w - 2) btns style phaseJoystick phaseYes]
-  AddPlayerName{..} -> addCursor $ standardScreen countMessage $ playerList ++
-    [\style -> newJoyNameBox (_w - 2) btns style phaseJoystick phaseYes phaseNo phaseName]
+draw w h btns phase = case phase of
+  Waiting{..} -> registryScreen countMessage playerList
+  ConfirmQuit{} -> registryScreen "Are you sure you want to quit? (y/n)" playerList
+  AddPlayerYes{..} -> registryScreen countMessage $ playerList ++ [newJoystickBox $ w - 2]
+  AddPlayerNo{..} -> registryScreen countMessage $ playerList ++
+    [\style -> newNoBox (w - 2) btns style phaseJoystick phaseYes]
+  AddPlayerName{..} -> addCursor $ registryScreen countMessage $ playerList ++
+    [\style -> newJoyNameBox (w - 2) btns style phaseJoystick phaseYes phaseNo phaseName]
     where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
           r = 3 + 2 * length phasePlayers
           c = 2 + length phaseName
-  AddPlayerAPI{..} -> addCursor $ standardScreen countMessage $ playerList ++
-    [\style -> newAPINameBox (_w - 2) style phaseName]
+  AddPlayerAPI{..} -> addCursor $ registryScreen countMessage $ playerList ++
+    [\style -> newAPINameBox (w - 2) style phaseName]
     where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
           r = 3 + 2 * length phasePlayers
           c = 2 + length phaseName
-  DeletePlayer{} -> standardScreen "Choose a worker to remove from duty." playerList
-  AddTask{..} -> addCursor $ standardScreen "Enter the new task to be performed." $ taskList ++
-    [\style -> taskBox (_w - 2) style phaseNewTask]
+  DeletePlayer{} -> registryScreen "Choose a worker to remove from duty." playerList
+  AddTask{..} -> addCursor $ todoScreen "Enter the new task to be performed." $ taskList ++
+    [\style -> taskBox (w - 2) style phaseNewTask]
     where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
           r = 3 + length phaseTasks
           c = 2 + length phaseNewTask
-  DeleteTask{..} -> standardScreen "Choose a task to remove." taskList
-  Voting{..} -> flip standardScreen playerList $ let
+  DeleteTask{..} -> todoScreen "Choose a task to remove." taskList
+  Voting{..} -> flip registryScreen playerList $ let
     remaining = phaseVoteLength - Time.diffUTCTime phaseTimeNow phaseTimeStart
     in "Vote now! " ++ showTime remaining ++ " left"
-  VoteComplete{..} -> flip standardScreen playerList $ unwords
+  VoteComplete{..} -> flip registryScreen playerList $ unwords
     [ "Voting is over."
     , show y ++ " yea,"
     , show n ++ " nay,"
     , show (length phasePlayers - y - n) ++ " abstained."
     ] where y = length phasePlayersYes
             n = length phasePlayersNo
-  Inspection{..} -> flip standardScreen playerList $ let
+  Inspection{..} -> flip registryScreen playerList $ let
     inspectionDone = length (phasePlayersGood ++ phasePlayersBad) == length phasePlayers
     lastTime = Time.diffUTCTime (foldr max phaseTimeStart $ map snd $ phasePlayersGood ++ phasePlayersBad) phaseTimeStart
     in if inspectionDone
       then "Inspection complete. Took " ++ showTime lastTime
       else "Inspection is underway. " ++ showTime (Time.diffUTCTime phaseTimeNow phaseTimeStart) ++ " elapsed"
-  ChosenOne{..} -> standardScreen "Your name was pulled!" playerList
-  Citation{..} -> standardScreen "Choose a worker to receive a citation." playerList
+  ChosenOne{..} -> registryScreen "Your name was pulled!" playerList
+  Citation{..} -> registryScreen "Choose a worker to receive a citation." playerList
   where
     countMessage = case length $ phasePlayers phase of
       1 -> "1 inspector ready."
       n -> show n ++ " inspectors ready."
-    standardScreen msg entries = Vty.picForLayers
+    registryScreen = standardScreen whiteOnRed registry
+    todoScreen = standardScreen whiteOnBlue todo
+    standardScreen style header msg entries = Vty.picForLayers
       [ Vty.horizCat
-        [ Vty.backgroundFill 1 _h
+        [ Vty.backgroundFill 1 h
         , Vty.vertCat
-          [ Vty.backgroundFill (_w - 1) 3
+          [ Vty.backgroundFill (w - 1) 3
           , Vty.vertCat $ zipWith ($) entries twoToneList
           ]
         ]
-      , mainScreen _w _h msg
+      , mainScreen w h style header msg
       ]
+    registry = "GLORIOUS LABOR REGISTRY OF RUSTLER'S KEEP"
+    todo = "GLORIOUS TODO LIST OF RUSTLER'S KEEP"
+    whiteOnBlue = rgb 255 255 255 `on` rgb 0 0 128
+    whiteOnRed = rgb 255 255 255 `on` rgb 128 0 0
     twoToneList = do
       (ix, bg) <- zip [0..] $ cycle [rgb 255 255 255, rgb 200 200 200]
       return $ Vty.black `on` case phase of
@@ -248,11 +254,11 @@ draw _w _h btns phase = case phase of
               guard $ i == j
               return $ Time.diffUTCTime playerTime phaseTimeStart
             _ -> Nothing
-      return $ \style -> workerBox (_w - 2) btns style p tasks time
+      return $ \style -> workerBox (w - 2) btns style p tasks time
     taskList :: [Vty.Attr -> Vty.Image]
     taskList = do
       (task, _) <- phaseTasks phase
-      return $ \style -> taskBox (_w - 2) style task
+      return $ \style -> taskBox (w - 2) style task
 
 showTime :: Time.NominalDiffTime -> String
 showTime t = show (realToFrac t :: Milli) ++ "s"
