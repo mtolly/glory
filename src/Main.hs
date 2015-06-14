@@ -7,7 +7,8 @@ module Main (main) where
 
 import           Control.Applicative      ((<$>))
 import           Control.Concurrent       (forkIO, threadDelay)
-import           Control.Concurrent.MVar  (newEmptyMVar, putMVar, tryTakeMVar)
+import           Control.Concurrent.STM   (atomically, modifyTVar, newTVarIO,
+                                           swapTVar)
 import           Control.Exception        (bracket, bracket_)
 import           Control.Monad            (forM, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
@@ -131,18 +132,20 @@ main = do
 
     cfg <- Vty.standardIOConfig
     withVty cfg $ \vty -> do
-      vtyEvent <- newEmptyMVar
-      _ <- forkIO $ forever $ Vty.nextEvent vty >>= putMVar vtyEvent
+      vtyEvent <- newTVarIO []
+      _ <- forkIO $ forever $ do
+        e <- Vty.nextEvent vty
+        atomically $ modifyTVar vtyEvent (e :)
 
-      apiEvent <- newEmptyMVar
+      apiEvent <- newTVarIO []
       remote <- BL.readFile "remote/index.html"
       _ <- forkIO $ Warp.run 4200 $ \req f ->
         case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
           [code, "YES"] -> do
-            putMVar apiEvent (T.unpack code, True)
+            atomically $ modifyTVar apiEvent ((T.unpack code, True) :)
             f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received YES."
           [code, "NO"] -> do
-            putMVar apiEvent (T.unpack code, False)
+            atomically $ modifyTVar apiEvent ((T.unpack code, False) :)
             f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
           [] -> f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html" )] remote
           _  -> f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
@@ -153,8 +156,8 @@ main = do
             Vty.update vty $ draw w h prev phase
             liftIO $ threadDelay 5000
             sdlEvents <- untilNothing pollSDL
-            vtyEvents <- untilNothing $ tryTakeMVar vtyEvent
-            apiEvents <- untilNothing $ tryTakeMVar apiEvent
+            vtyEvents <- atomically $ swapTVar vtyEvent []
+            apiEvents <- atomically $ swapTVar apiEvent []
             let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
                 curr = foldr ($) prev $ map modifyButtons sdlEvents
             update (newPresses prev curr) keys apiEvents phase >>= \case
