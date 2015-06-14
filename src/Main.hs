@@ -2,6 +2,7 @@
 {-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms   #-}
+{-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE TupleSections     #-}
 module Main (main) where
 
@@ -13,6 +14,7 @@ import           Control.Exception        (bracket, bracket_)
 import           Control.Monad            (forM, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy     as BL
+import           Data.FileEmbed           (embedFile)
 import qualified Data.Set                 as Set
 import qualified Data.Text                as T
 import           Foreign                  (Ptr, alloca, nullPtr, peek, (.|.))
@@ -138,7 +140,7 @@ main = do
         atomically $ modifyTVar vtyEvent (e :)
 
       apiEvent <- newTVarIO []
-      remote <- BL.readFile "remote/index.html"
+      let remote = BL.fromChunks [$(embedFile "remote/index.html")]
       _ <- forkIO $ Warp.run 4200 $ \req f ->
         case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
           [code, "YES"] -> do
