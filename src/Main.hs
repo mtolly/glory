@@ -12,7 +12,7 @@ import           Control.Concurrent       (forkIO, threadDelay)
 import           Control.Concurrent.STM   (atomically, modifyTVar, newTVarIO,
                                            swapTVar)
 import           Control.Exception        (bracket)
-import           Control.Monad            (forM, forever, liftM, unless)
+import           Control.Monad            (forM, forM_, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy     as BL
 import           Data.FileEmbed           (embedFile)
@@ -120,7 +120,6 @@ main = do
   withMixer 0 $ do
   withMixerAudio 44100 mixDefaultFormat 2 1024 $ do
   withChunks $ \audio -> do
-  sdlCode 0 $ mixPlayChannel (-1) (audio SFX_booth_intro) 0
 
   cfg <- Vty.standardIOConfig
   withVty cfg $ \vty -> do
@@ -152,9 +151,13 @@ main = do
         apiEvents <- atomically $ swapTVar apiEvent []
         let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
             curr = foldr ($) prev $ map modifyButtons sdlEvents
-        update (newPresses prev curr) keys apiEvents phase >>= \case
-          Just phase' -> loop phase' curr
-          Nothing     -> return ()
+        nextPhase <- runUpdate (update (newPresses prev curr) keys apiEvents) phase
+        case nextPhase of
+          Just (phase', sfxs) -> do
+            forM_ (Set.toList sfxs) $ \sfx ->
+              sdlCode' (/= (-1)) $ mixPlayChannel (-1) (audio sfx) 0
+            loop phase' curr
+          Nothing            -> return ()
 
       startState = Waiting{ phasePlayers = [], phaseTasks = [] }
       startButtons = map (const Set.empty) joys

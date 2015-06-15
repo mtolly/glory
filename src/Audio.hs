@@ -14,12 +14,14 @@ import           SDLNice
 data SFX
   = SFX_speech_inspector
   | SFX_booth_intro
+  | SFX_printer_line
   deriving (Eq, Ord, Show, Read, Enum, Bounded)
 
 sfxWAV :: SFX -> B.ByteString
 sfxWAV = \case
   SFX_speech_inspector -> $(embedFile "sound/speech-inspector.wav")
-  SFX_booth_intro -> $(embedFile "sound/booth-intro.wav")
+  SFX_booth_intro      -> $(embedFile "sound/booth-intro.wav")
+  SFX_printer_line     -> $(embedFile "sound/printer-line.wav")
 
 withChunk :: SFX -> (MixChunk -> IO a) -> IO a
 withChunk sfx act = unsafeUseAsCStringLen (sfxWAV sfx) $ \(wav, len) -> do

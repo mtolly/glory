@@ -17,9 +17,13 @@ notNull act = do
 
 -- | Extracts and throws an SDL error if the action doesn't return the right number.
 sdlCode :: (Eq a, Num a, MonadIO m) => a -> m a -> m ()
-sdlCode c act = do
+sdlCode c = sdlCode' (== c)
+
+-- | Extracts and throws an SDL error if the return code doesn't pass a test.
+sdlCode' :: (MonadIO m) => (a -> Bool) -> m a -> m ()
+sdlCode' p act = do
   n <- act
-  unless (n == c) $ SDL.getError >>= liftIO . peekCString >>= error
+  unless (p n) $ SDL.getError >>= liftIO . peekCString >>= error
 
 withSDL :: [SDL.InitFlag] -> IO a -> IO a
 withSDL flags = bracket_
