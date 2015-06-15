@@ -16,12 +16,15 @@ import           Control.Monad            (forM, forM_, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy     as BL
 import           Data.FileEmbed           (embedFile)
+import           Data.List                (intercalate)
 import qualified Data.Set                 as Set
 import qualified Data.Text                as T
 import           Foreign                  (alloca, peek)
 import qualified Graphics.UI.SDL          as SDL
 import qualified Graphics.Vty             as Vty
 import qualified Network.HTTP.Types       as HTTP
+import           Network.Info             (IPv4 (..), getNetworkInterfaces,
+                                           ipv4)
 import qualified Network.Wai              as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import           System.IO                (hIsTerminalDevice, stdout)
@@ -128,9 +131,18 @@ main = do
     e <- Vty.nextEvent vty
     atomically $ modifyTVar vtyEvent (e :)
 
+  ips <- map ipv4 <$> getNetworkInterfaces
+  let goodIP = \case
+        IPv4 0x0100007F -> False -- 127.0.0.1
+        IPv4 0          -> False -- 0.0.0.0
+        _               -> True
+      connectTo = case filter goodIP ips of
+        []   -> Nothing
+        good -> Just $ intercalate ", " [ show ip ++ ":" ++ show port | ip <- good ]
+      port = 4200
   apiEvent <- newTVarIO []
   let remote = BL.fromChunks [$(embedFile "remote/index.html")]
-  _ <- forkIO $ Warp.run 4200 $ \req f ->
+  _ <- forkIO $ Warp.run port $ \req f ->
     case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
       [code, "YES"] -> do
         atomically $ modifyTVar apiEvent ((T.unpack code, True) :)
@@ -144,7 +156,7 @@ main = do
   let loop :: Phase -> [Set.Set Button360] -> IO ()
       loop phase prev = do
         (w, h) <- Vty.displayBounds $ Vty.outputIface vty
-        Vty.update vty $ draw w h prev phase
+        Vty.update vty $ draw w h connectTo prev phase
         liftIO $ threadDelay 5000
         sdlEvents <- untilNothing pollSDL
         vtyEvents <- atomically $ swapTVar vtyEvent []

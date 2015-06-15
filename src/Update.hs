@@ -50,6 +50,7 @@ update
   -> Update ()
 update sdl keys api = do
   phase <- get
+  now <- liftIO Time.getCurrentTime
   let next = put
       pressedChar c = Vty.KChar c `elem` keys
       pressedKey k = k `elem` keys
@@ -73,25 +74,21 @@ update sdl keys api = do
       | pressedChar '-' && not (null phaseTasks)
         -> next DeleteTask{ phaseIndex = 0, .. }
       | pressedChar 'l' -> assignTasks phase >>= next
-      | pressedChar 'v' -> do
-        now <- liftIO Time.getCurrentTime
-        next Voting
-          { phasePlayersYes = []
-          , phasePlayersNo  = []
-          , phaseTimeStart  = now
-          , phaseTimeNow    = now
-          , phaseVoteLength = 10 -- seconds
-          , ..
-          }
-      | pressedChar ' ' -> do
-        now <- liftIO Time.getCurrentTime
-        next Inspection
-          { phasePlayersGood = []
-          , phasePlayersBad  = []
-          , phaseTimeStart   = now
-          , phaseTimeNow     = now
-          , ..
-          }
+      | pressedChar 'v' -> next Voting
+        { phasePlayersYes = []
+        , phasePlayersNo  = []
+        , phaseTimeStart  = now
+        , phaseTimeNow    = now
+        , phaseVoteLength = 10 -- seconds
+        , ..
+        }
+      | pressedChar ' ' -> next Inspection
+        { phasePlayersGood = []
+        , phasePlayersBad  = []
+        , phaseTimeStart   = now
+        , phaseTimeNow     = now
+        , ..
+        }
       | pressedChar '1' && not (null phasePlayers) -> do
         phaseIndex <- getRandomR (0, length phasePlayers - 1)
         next ChosenOne{..}
@@ -204,7 +201,6 @@ update sdl keys api = do
         }
       | otherwise -> phase
     Voting{..} -> do
-      now <- liftIO Time.getCurrentTime
       let undecided = do
             (playerIndex, player) <- zip [0..] phasePlayers
             guard $ notElem playerIndex $ phasePlayersYes ++ phasePlayersNo
@@ -233,7 +229,6 @@ update sdl keys api = do
       | pressedKey Vty.KEsc -> Waiting{..}
       | otherwise           -> phase
     Inspection{..} -> do
-      now <- liftIO Time.getCurrentTime
       let undecided = do
             (playerIndex, player) <- zip [0..] phasePlayers
             guard $ notElem playerIndex $ map fst $ phasePlayersGood ++ phasePlayersBad

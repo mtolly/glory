@@ -31,7 +31,7 @@ withChunk sfx act = unsafeUseAsCStringLen (sfxWAV sfx) $ \(wav, len) -> do
 withChunks :: ((SFX -> MixChunk) -> IO a) -> IO a
 withChunks act = let
   sfxs = [minBound .. maxBound]
-  in withMany withChunk [minBound .. maxBound] $ \chunks -> let
+  in withMany withChunk sfxs $ \chunks -> let
     table = zip sfxs chunks
     in act $ \sfx -> case lookup sfx table of
       Just chunk -> chunk

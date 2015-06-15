@@ -164,19 +164,19 @@ genWorkerBox w style line1 line2 = Vty.horizCat
   , spaceColumn
   ] where spaceColumn = Vty.charFill style ' ' 1 (2 :: Int)
 
-draw :: Int -> Int -> [Set.Set Button360] -> Phase -> Vty.Picture
-draw w h btns phase = case phase of
-  Waiting{..} -> registryScreen countMessage playerList
+draw :: Int -> Int -> Maybe String -> [Set.Set Button360] -> Phase -> Vty.Picture
+draw w h connectTo btns phase = case phase of
+  Waiting{..} -> registryScreen defaultMessage playerList
   ConfirmQuit{} -> registryScreen "Are you sure you want to quit? (y/n)" playerList
-  AddPlayerYes{..} -> registryScreen countMessage $ playerList ++ [newJoystickBox $ w - 2]
-  AddPlayerNo{..} -> registryScreen countMessage $ playerList ++
+  AddPlayerYes{..} -> registryScreen defaultMessage $ playerList ++ [newJoystickBox $ w - 2]
+  AddPlayerNo{..} -> registryScreen defaultMessage $ playerList ++
     [\style -> newNoBox (w - 2) btns style phaseJoystick phaseYes]
-  AddPlayerName{..} -> addCursor $ registryScreen countMessage $ playerList ++
+  AddPlayerName{..} -> addCursor $ registryScreen defaultMessage $ playerList ++
     [\style -> newJoyNameBox (w - 2) btns style phaseJoystick phaseYes phaseNo phaseName]
     where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
           r = 3 + 2 * length phasePlayers
           c = 2 + length phaseName
-  AddPlayerAPI{..} -> addCursor $ registryScreen countMessage $ playerList ++
+  AddPlayerAPI{..} -> addCursor $ registryScreen defaultMessage $ playerList ++
     [\style -> newAPINameBox (w - 2) style phaseName]
     where addCursor pic = pic{ Vty.picCursor = Vty.Cursor c r }
           r = 3 + 2 * length phasePlayers
@@ -207,6 +207,9 @@ draw w h btns phase = case phase of
   ChosenOne{..} -> registryScreen "Your name was pulled!" playerList
   Citation{..} -> registryScreen "Choose a worker to receive a citation." playerList
   where
+    defaultMessage = countMessage ++ case connectTo of
+      Nothing  -> ""
+      Just ips -> " Connect to " ++ ips
     countMessage = case length $ phasePlayers phase of
       1 -> "1 inspector ready."
       n -> show n ++ " inspectors ready."
