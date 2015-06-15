@@ -1,9 +1,10 @@
-{-# LANGUAGE LambdaCase        #-}
-{-# LANGUAGE MultiWayIf        #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE PatternSynonyms   #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE LambdaCase               #-}
+{-# LANGUAGE MultiWayIf               #-}
+{-# LANGUAGE NondecreasingIndentation #-}
+{-# LANGUAGE OverloadedStrings        #-}
+{-# LANGUAGE PatternSynonyms          #-}
+{-# LANGUAGE TemplateHaskell          #-}
+{-# LANGUAGE TupleSections            #-}
 module Main (main) where
 
 import           Control.Applicative      ((<$>))
@@ -14,11 +15,13 @@ import           Control.Exception        (bracket, bracket_)
 import           Control.Monad            (forM, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy     as BL
+import           Data.ByteString.Unsafe   (unsafeUseAsCStringLen)
 import           Data.FileEmbed           (embedFile)
 import qualified Data.Set                 as Set
 import qualified Data.Text                as T
-import           Foreign                  (Ptr, alloca, nullPtr, peek, (.|.))
-import           Foreign.C                (peekCString)
+import           Foreign                  (Ptr, Word16, alloca, castPtr,
+                                           nullPtr, peek, (.|.))
+import           Foreign.C                (CInt, peekCString)
 import qualified Graphics.UI.SDL          as SDL
 import qualified Graphics.Vty             as Vty
 import qualified Network.HTTP.Types       as HTTP
@@ -28,6 +31,7 @@ import           System.IO                (hIsTerminalDevice, stdout)
 
 import           Core
 import           Draw
+import           SDLMixer
 import           Update
 
 -- | Returns Just an event if there is one currently in the queue.
@@ -123,50 +127,64 @@ untilNothing act = act >>= \case
 withVty :: Vty.Config -> (Vty.Vty -> IO a) -> IO a
 withVty cfg = bracket (Vty.mkVty cfg) Vty.shutdown
 
+withMixer :: CInt -> IO a -> IO a
+withMixer flags = bracket_ (sdlCode 0 $ mixInit flags) mixQuit
+
+withMixerAudio :: CInt -> Word16 -> CInt -> CInt -> IO a -> IO a
+withMixerAudio a b c d = bracket_ (sdlCode 0 $ mixOpenAudio a b c d) mixCloseAudio
+
 main :: IO ()
 main = do
   b <- hIsTerminalDevice stdout
   unless b $ error "Try again comrade. TTY is required"
-  withSDL [SDL.SDL_INIT_JOYSTICK] $ do
 
-    njoy <- SDL.numJoysticks
-    joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
+  withSDL [SDL.SDL_INIT_JOYSTICK, SDL.SDL_INIT_AUDIO] $ do
 
-    cfg <- Vty.standardIOConfig
-    withVty cfg $ \vty -> do
-      vtyEvent <- newTVarIO []
-      _ <- forkIO $ forever $ do
-        e <- Vty.nextEvent vty
-        atomically $ modifyTVar vtyEvent (e :)
+  njoy <- SDL.numJoysticks
+  joys <- forM [0 .. njoy - 1] $ notNull . SDL.joystickOpen
 
-      apiEvent <- newTVarIO []
-      let remote = BL.fromChunks [$(embedFile "remote/index.html")]
-      _ <- forkIO $ Warp.run 4200 $ \req f ->
-        case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
-          [code, "YES"] -> do
-            atomically $ modifyTVar apiEvent ((T.unpack code, True) :)
-            f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received YES."
-          [code, "NO"] -> do
-            atomically $ modifyTVar apiEvent ((T.unpack code, False) :)
-            f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
-          [] -> f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html" )] remote
-          _  -> f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
+  withMixer 0 $ do
+  withMixerAudio 44100 mixDefaultFormat 2 1024 $ do
+  unsafeUseAsCStringLen $(embedFile "sound/booth-intro.wav") $ \(wav, len) -> do
+  rw <- notNull $ SDL.rwFromConstMem (castPtr wav) (fromIntegral len)
+  chunk <- notNull $ mixLoadWAVRW rw 1
+  sdlCode 0 $ mixPlayChannel (-1) chunk 0
 
-      let loop :: Phase -> [Set.Set Button360] -> IO ()
-          loop phase prev = do
-            (w, h) <- Vty.displayBounds $ Vty.outputIface vty
-            Vty.update vty $ draw w h prev phase
-            liftIO $ threadDelay 5000
-            sdlEvents <- untilNothing pollSDL
-            vtyEvents <- atomically $ swapTVar vtyEvent []
-            apiEvents <- atomically $ swapTVar apiEvent []
-            let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
-                curr = foldr ($) prev $ map modifyButtons sdlEvents
-            update (newPresses prev curr) keys apiEvents phase >>= \case
-              Just phase' -> loop phase' curr
-              Nothing     -> return ()
+  cfg <- Vty.standardIOConfig
+  withVty cfg $ \vty -> do
+  vtyEvent <- newTVarIO []
+  _ <- forkIO $ forever $ do
+    e <- Vty.nextEvent vty
+    atomically $ modifyTVar vtyEvent (e :)
 
-          startState = Waiting{ phasePlayers = [], phaseTasks = [] }
-          startButtons = map (const Set.empty) joys
+  apiEvent <- newTVarIO []
+  let remote = BL.fromChunks [$(embedFile "remote/index.html")]
+  _ <- forkIO $ Warp.run 4200 $ \req f ->
+    case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
+      [code, "YES"] -> do
+        atomically $ modifyTVar apiEvent ((T.unpack code, True) :)
+        f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received YES."
+      [code, "NO"] -> do
+        atomically $ modifyTVar apiEvent ((T.unpack code, False) :)
+        f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/plain")] "Received NO."
+      [] -> f $ Wai.responseLBS HTTP.status200 [(HTTP.hContentType, "text/html" )] remote
+      _  -> f $ Wai.responseLBS HTTP.status400 [(HTTP.hContentType, "text/plain")] "Invalid request."
 
-      loop startState startButtons
+  let loop :: Phase -> [Set.Set Button360] -> IO ()
+      loop phase prev = do
+        (w, h) <- Vty.displayBounds $ Vty.outputIface vty
+        Vty.update vty $ draw w h prev phase
+        liftIO $ threadDelay 5000
+        sdlEvents <- untilNothing pollSDL
+        vtyEvents <- atomically $ swapTVar vtyEvent []
+        apiEvents <- atomically $ swapTVar apiEvent []
+        let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
+            curr = foldr ($) prev $ map modifyButtons sdlEvents
+        update (newPresses prev curr) keys apiEvents phase >>= \case
+          Just phase' -> loop phase' curr
+          Nothing     -> return ()
+
+      startState = Waiting{ phasePlayers = [], phaseTasks = [] }
+      startButtons = map (const Set.empty) joys
+
+  loop startState startButtons

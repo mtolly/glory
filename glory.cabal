@@ -13,6 +13,7 @@ executable glory
     Core
     Draw
     Update
+    SDLMixer
   build-depends:
 
     base >= 4.7 && < 4.8
@@ -34,3 +35,4 @@ executable glory
   hs-source-dirs:       src
   default-language:     Haskell2010
   ghc-options:          -Wall -threaded
+  extra-libraries:      SDL2_mixer
