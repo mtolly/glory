@@ -11,17 +11,14 @@ import           Control.Applicative      ((<$>))
 import           Control.Concurrent       (forkIO, threadDelay)
 import           Control.Concurrent.STM   (atomically, modifyTVar, newTVarIO,
                                            swapTVar)
-import           Control.Exception        (bracket, bracket_)
+import           Control.Exception        (bracket)
 import           Control.Monad            (forM, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy     as BL
-import           Data.ByteString.Unsafe   (unsafeUseAsCStringLen)
 import           Data.FileEmbed           (embedFile)
 import qualified Data.Set                 as Set
 import qualified Data.Text                as T
-import           Foreign                  (Ptr, Word16, alloca, castPtr,
-                                           nullPtr, peek, (.|.))
-import           Foreign.C                (CInt, peekCString)
+import           Foreign                  (alloca, peek)
 import qualified Graphics.UI.SDL          as SDL
 import qualified Graphics.Vty             as Vty
 import qualified Network.HTTP.Types       as HTTP
@@ -29,9 +26,11 @@ import qualified Network.Wai              as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import           System.IO                (hIsTerminalDevice, stdout)
 
+import           Audio
 import           Core
 import           Draw
 import           SDLMixer
+import           SDLNice
 import           Update
 
 -- | Returns Just an event if there is one currently in the queue.
@@ -96,25 +95,6 @@ modifyButtons = \case
       (_ , []    ) -> xs
       (ys, z : zs) -> ys ++ [f z] ++ zs
 
--- | Extracts and throws an SDL error if the action returns a null pointer.
-notNull :: (MonadIO m) => m (Ptr a) -> m (Ptr a)
-notNull act = do
-  p <- act
-  if p == nullPtr
-    then SDL.getError >>= liftIO . peekCString >>= error
-    else return p
-
--- | Extracts and throws an SDL error if the action doesn't return the right number.
-sdlCode :: (Eq a, Num a, MonadIO m) => a -> m a -> m ()
-sdlCode c act = do
-  n <- act
-  unless (n == c) $ SDL.getError >>= liftIO . peekCString >>= error
-
-withSDL :: [SDL.InitFlag] -> IO a -> IO a
-withSDL flags = bracket_
-  (sdlCode 0 $ SDL.init $ foldr (.|.) 0 flags)
-  SDL.quit
-
 newPresses :: [Set.Set Button360] -> [Set.Set Button360] -> [(SDL.JoystickID, Button360)]
 newPresses prev curr = concat $ zipWith3 f [0..] prev curr where
   f i set1 set2 = map (i,) $ Set.toList $ Set.difference set2 set1
@@ -126,12 +106,6 @@ untilNothing act = act >>= \case
 
 withVty :: Vty.Config -> (Vty.Vty -> IO a) -> IO a
 withVty cfg = bracket (Vty.mkVty cfg) Vty.shutdown
-
-withMixer :: CInt -> IO a -> IO a
-withMixer flags = bracket_ (sdlCode 0 $ mixInit flags) mixQuit
-
-withMixerAudio :: CInt -> Word16 -> CInt -> CInt -> IO a -> IO a
-withMixerAudio a b c d = bracket_ (sdlCode 0 $ mixOpenAudio a b c d) mixCloseAudio
 
 main :: IO ()
 main = do
@@ -145,10 +119,8 @@ main = do
 
   withMixer 0 $ do
   withMixerAudio 44100 mixDefaultFormat 2 1024 $ do
-  unsafeUseAsCStringLen $(embedFile "sound/booth-intro.wav") $ \(wav, len) -> do
-  rw <- notNull $ SDL.rwFromConstMem (castPtr wav) (fromIntegral len)
-  chunk <- notNull $ mixLoadWAVRW rw 1
-  sdlCode 0 $ mixPlayChannel (-1) chunk 0
+  withChunks $ \audio -> do
+  sdlCode 0 $ mixPlayChannel (-1) (audio SFX_booth_intro) 0
 
   cfg <- Vty.standardIOConfig
   withVty cfg $ \vty -> do

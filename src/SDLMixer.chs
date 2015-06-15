@@ -3,6 +3,9 @@ module SDLMixer where
 import Foreign
 import Foreign.C
 import qualified Graphics.UI.SDL as SDL
+import Control.Exception (bracket_)
+
+import SDLNice
 
 #include <SDL_mixer.h>
 
@@ -26,3 +29,9 @@ mixLoadWAV s = withCString "rb" $ \rb -> do
 {#fun Mix_PlayChannelTimed as ^ { `CInt', `MixChunk', `CInt', `CInt' } -> `CInt' #}
 mixPlayChannel :: CInt -> MixChunk -> CInt -> IO CInt
 mixPlayChannel a b c = mixPlayChannelTimed a b c (-1)
+
+withMixer :: CInt -> IO a -> IO a
+withMixer flags = bracket_ (sdlCode 0 $ mixInit flags) mixQuit
+
+withMixerAudio :: CInt -> Word16 -> CInt -> CInt -> IO a -> IO a
+withMixerAudio a b c d = bracket_ (sdlCode 0 $ mixOpenAudio a b c d) mixCloseAudio
