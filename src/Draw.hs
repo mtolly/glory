@@ -105,7 +105,8 @@ workerBox w btns style player tasks time = genWorkerBox w style img1 img2 where
     Just t  -> " (" ++ showTime t ++ ")"
   citations = Vty.string style $ case playerCitations player of
     0 -> ""
-    n -> ' ' : replicate n '!'
+    n -> ' ' : case quotRem n 10 of
+      (tens, ones) -> replicate tens 'X' ++ replicate ones '!'
 
 taskBox :: Int -> Vty.Attr -> String -> Vty.Image
 taskBox w style task = Vty.horizCat
