@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module Update (runUpdate, update) where
 
-import           Control.Monad             (guard, replicateM)
+import           Control.Monad             (guard, replicateM, unless)
 import           Control.Monad.IO.Class    (liftIO)
 import           Control.Monad.Random      (MonadRandom, getRandomR)
 import           Control.Monad.Trans.Maybe (MaybeT (..))
@@ -209,22 +209,23 @@ update sdl keys api = do
             [ ix | (ix, player) <- undecided, pressedYes player ]
           newNo = phasePlayersNo ++
             [ ix | (ix, player) <- undecided, pressedNo player, ix `notElem` newYes ]
-      next $ if
-        | pressedKey Vty.KEsc -> Waiting{..}
-        | Time.diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
-          || length newYes + length newNo == length phasePlayers -- everyone's voted
-          || pressedChar 'v'                                     -- ended vote early
-          -> VoteComplete
-            { phasePlayersYes = newYes
+      if  | pressedKey Vty.KEsc -> next Waiting{..}
+          | Time.diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
+            || length newYes + length newNo == length phasePlayers -- everyone's voted
+            || pressedChar 'v'                                     -- ended vote early
+            -> do
+              playSFX SFX_time_up
+              next VoteComplete
+                { phasePlayersYes = newYes
+                , phasePlayersNo  = newNo
+                , ..
+                }
+          | otherwise -> next Voting
+            { phaseTimeNow    = now
+            , phasePlayersYes = newYes
             , phasePlayersNo  = newNo
             , ..
             }
-        | otherwise -> Voting
-          { phaseTimeNow    = now
-          , phasePlayersYes = newYes
-          , phasePlayersNo  = newNo
-          , ..
-          }
     VoteComplete{..} -> next $ if
       | pressedKey Vty.KEsc -> Waiting{..}
       | otherwise           -> phase
@@ -233,10 +234,12 @@ update sdl keys api = do
             (playerIndex, player) <- zip [0..] phasePlayers
             guard $ notElem playerIndex $ map fst $ phasePlayersGood ++ phasePlayersBad
             return (playerIndex, player)
-          newGood = phasePlayersGood ++
-            [ (ix, now) | (ix, player) <- undecided, pressedYes player ]
-          newBad = phasePlayersBad ++
-            [ (ix, now) | (ix, player) <- undecided, pressedNo player, ix `notElem` map fst newGood ]
+          newGood = phasePlayersGood ++ addedGood
+          addedGood = [ (ix, now) | (ix, player) <- undecided, pressedYes player ]
+          newBad = phasePlayersBad ++ addedBad
+          addedBad = [ (ix, now) | (ix, player) <- undecided, pressedNo player, ix `notElem` map fst addedGood ]
+      unless (null addedGood) $ playSFX SFX_stamp_down
+      unless (null addedBad) $ playSFX SFX_border_callguards
       next $ if
         | pressedKey Vty.KEsc -> Waiting{..}
         | otherwise -> Inspection

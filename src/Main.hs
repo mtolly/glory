@@ -174,4 +174,5 @@ main = do
       startState = Waiting{ phasePlayers = [], phaseTasks = [] }
       startButtons = map (const Set.empty) joys
 
+  sdlCode' (/= (-1)) $ mixPlayChannel (-1) (audio SFX_booth_intro) 0
   loop startState startButtons
