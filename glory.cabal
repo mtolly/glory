@@ -6,6 +6,8 @@ build-type:           Simple
 cabal-version:        >= 1.10
 extra-source-files:
   remote/index.html
+  sound/*.wav
+  sound-monster/*.wav
 
 executable glory
   main-is:              Main.hs

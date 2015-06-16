@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module Update (runUpdate, update) where
 
-import           Control.Monad             (guard, replicateM, unless)
+import           Control.Monad             (guard, replicateM, unless, when)
 import           Control.Monad.IO.Class    (liftIO)
 import           Control.Monad.Random      (MonadRandom, getRandomR)
 import           Control.Monad.Trans.Maybe (MaybeT (..))
@@ -205,16 +205,18 @@ update sdl keys api = do
             (playerIndex, player) <- zip [0..] phasePlayers
             guard $ notElem playerIndex $ phasePlayersYes ++ phasePlayersNo
             return (playerIndex, player)
-          newYes = phasePlayersYes ++
-            [ ix | (ix, player) <- undecided, pressedYes player ]
-          newNo = phasePlayersNo ++
-            [ ix | (ix, player) <- undecided, pressedNo player, ix `notElem` newYes ]
+          newYes = phasePlayersYes ++ addedYes
+          addedYes = [ ix | (ix, player) <- undecided, pressedYes player ]
+          newNo = phasePlayersNo ++ addedNo
+          addedNo = [ ix | (ix, player) <- undecided, pressedNo player, ix `notElem` addedYes ]
+      unless (null addedYes) $ playSFX SFX_monster_yes
+      unless (null addedNo) $ playSFX SFX_monster_no
       if  | pressedKey Vty.KEsc -> next Waiting{..}
           | Time.diffUTCTime now phaseTimeStart >= phaseVoteLength -- time's up
             || length newYes + length newNo == length phasePlayers -- everyone's voted
             || pressedChar 'v'                                     -- ended vote early
             -> do
-              playSFX SFX_time_up
+              when (null addedYes && null addedNo) $ playSFX SFX_time_up
               next VoteComplete
                 { phasePlayersYes = newYes
                 , phasePlayersNo  = newNo
