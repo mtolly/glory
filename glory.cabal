@@ -7,7 +7,8 @@ cabal-version:        >= 1.10
 extra-source-files:
   remote/index.html
   sound/*.wav
-  sound-monster/*.wav
+  sound/papers/*.wav
+  sound/pinball/*.WAV
 
 executable glory
   main-is:              Main.hs
