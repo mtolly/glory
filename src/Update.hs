@@ -114,7 +114,7 @@ update sdl keys api = do
         buttonNo : _ -> AddPlayerName{ phaseName = "", phaseNo = buttonNo, .. }
         []  | pressedKey Vty.KEsc -> AddPlayerYes{..}
             | otherwise           -> phase
-    AddPlayerName{..} -> next $ let
+    AddPlayerName{..} -> let
       funs = flip map keys $ \case
         Vty.KBS     -> \s -> take (length s - 1) s
         Vty.KChar c -> (++ [c])
@@ -128,10 +128,11 @@ update sdl keys api = do
         , playerNo        = phaseNo
         }
       in if
-        | pressedKey Vty.KEnter ->
-          Waiting{ phasePlayers = phasePlayers ++ [newPlayer], .. }
-        | pressedKey Vty.KEsc -> AddPlayerNo{..}
-        | otherwise -> AddPlayerName{ phaseName = name', .. }
+        | pressedKey Vty.KEnter -> do
+          playSFX SFX_pinball_8
+          next Waiting{ phasePlayers = phasePlayers ++ [newPlayer], .. }
+        | pressedKey Vty.KEsc -> next AddPlayerNo{..}
+        | otherwise -> next AddPlayerName{ phaseName = name', .. }
     AddPlayerAPI{..} -> let
       funs = flip map keys $ \case
         Vty.KBS     -> \s -> take (length s - 1) s
@@ -156,6 +157,7 @@ update sdl keys api = do
       in if
         | pressedKey Vty.KEnter -> do
           player <- newPlayer
+          playSFX SFX_pinball_8
           next Waiting{ phasePlayers = phasePlayers ++ [player], .. }
         | pressedKey Vty.KEsc -> next Waiting{..}
         | otherwise -> next AddPlayerAPI{ phaseName = name', .. }
@@ -178,16 +180,18 @@ update sdl keys api = do
         , ..
         }
       | otherwise -> phase
-    AddTask{..} -> next $ let
+    AddTask{..} -> let
       funs = flip map keys $ \case
         Vty.KBS     -> \s -> take (length s - 1) s
         Vty.KChar c -> (++ [c])
         _           -> id
       task' = foldl (flip ($)) phaseNewTask funs
       in if
-        | pressedKey Vty.KEnter -> Waiting{ phaseTasks = phaseTasks ++ [(task', [])], .. }
-        | pressedKey Vty.KEsc   -> Waiting{..}
-        | otherwise             -> AddTask{ phaseNewTask = task', .. }
+        | pressedKey Vty.KEnter -> do
+          playSFX SFX_pinball_8
+          next Waiting{ phaseTasks = phaseTasks ++ [(task', [])], .. }
+        | pressedKey Vty.KEsc   -> next Waiting{..}
+        | otherwise             -> next AddTask{ phaseNewTask = task', .. }
     DeleteTask{..} -> next $ if
       | pressedKey Vty.KUp    ->
         DeleteTask{ phaseIndex = max 0 $ phaseIndex - 1, .. }

@@ -19,6 +19,7 @@ data SFX
   | SFX_monster_yes
   | SFX_monster_no
   | SFX_tis_100_boot
+  | SFX_pinball_8
   deriving (Eq, Ord, Show, Read, Enum, Bounded)
 
 sfxWAV :: SFX -> B.ByteString
@@ -30,6 +31,7 @@ sfxWAV = \case
   SFX_monster_yes       -> $(embedFile "sound/steam-clicker-yes.wav")
   SFX_monster_no        -> $(embedFile "sound/steam-clicker-no.wav")
   SFX_tis_100_boot      -> $(embedFile "sound/tis-100-boot.wav")
+  SFX_pinball_8         -> $(embedFile "sound/pinball/SOUND8.WAV")
 
 withChunk :: SFX -> (MixChunk -> IO a) -> IO a
 withChunk sfx act = unsafeUseAsCStringLen (sfxWAV sfx) $ \(wav, len) -> do
