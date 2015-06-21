@@ -119,7 +119,7 @@ update sdl keys api = do
         Vty.KBS     -> \s -> take (length s - 1) s
         Vty.KChar c -> (++ [c])
         _           -> id
-      name' = foldl (flip ($)) phaseName funs
+      name' = foldr ($) phaseName funs
       newPlayer = PlayerJoy
         { playerName      = name'
         , playerCitations = 0
@@ -138,7 +138,7 @@ update sdl keys api = do
         Vty.KBS     -> \s -> take (length s - 1) s
         Vty.KChar c -> (++ [c])
         _           -> id
-      name' = foldl (flip ($)) phaseName funs
+      name' = foldr ($) phaseName funs
       newPlayer = do
         code <- newCode
         return PlayerAPI
@@ -185,7 +185,7 @@ update sdl keys api = do
         Vty.KBS     -> \s -> take (length s - 1) s
         Vty.KChar c -> (++ [c])
         _           -> id
-      task' = foldl (flip ($)) phaseNewTask funs
+      task' = foldr ($) phaseNewTask funs
       in if
         | pressedKey Vty.KEnter -> do
           playSFX SFX_pinball_8

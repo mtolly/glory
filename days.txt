@@ -22,8 +22,9 @@ day 4:
 * must have ID card if Rustler
 * photo (person, passport, ID card)
 * sex (person, passport)
+* issuing city (passport)
 * passport number (passport, entry permit)
-* expiration dates (passport, entry permit)
+* expired (passport, entry permit)
 * date of birth (passport, ID card)
 * purpose (transcript, entry permit)
 * stay length (transcript, entry permit)
@@ -37,7 +38,7 @@ day 5: 4
 
 day 6: 4 plus
 * must have work permit if purpose is work
-* expiration dates (passport, entry permit, work permit)
+* expired (passport, entry permit, work permit)
   note: work permit date must be past the work duration
 * seal (entry permit, work permit)
 
