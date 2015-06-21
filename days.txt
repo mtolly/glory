@@ -1,0 +1,83 @@
+day 1:
+* must have rustler passport
+
+day 2:
+* must have passport
+* photo (person, passport)
+* sex (person, passport)
+* issuing city (passport)
+* expired (passport)
+
+day 3:
+* must have passport
+* must have entry ticket if foreign
+* photo (person, passport)
+* sex (person, passport)
+* issuing city (passport)
+* expired (passport, entry ticket)
+
+day 4:
+* must have passport
+* must have entry permit if foreign
+* must have ID card if Rustler
+* photo (person, passport, ID card)
+* sex (person, passport)
+* passport number (passport, entry permit)
+* expiration dates (passport, entry permit)
+* date of birth (passport, ID card)
+* purpose (transcript, entry permit)
+* stay length (transcript, entry permit)
+* name (passport, ID card, entry permit)
+* height (person, ID card)
+* weight (person, ID card)
+* district (ID card)
+* seal (entry permit)
+
+day 5: 4
+
+day 6: 4 plus
+* must have work permit if purpose is work
+* expiration dates (passport, entry permit, work permit)
+  note: work permit date must be past the work duration
+* seal (entry permit, work permit)
+
+day 7: 6 plus
+* mark NO if Kolechian, to search
+
+day 8: 7 plus
+* must have diplomatic authorization if diplomat
+* name (diplomat)
+* seal (diplomat)
+* passport number (diplomat)
+* issuing country (passport, diplomat)
+* diplomat: access to the keep
+
+day 9: 8
+day 10: 8
+day 11: 8
+day 12: 8
+
+day 13: 8 plus
+* must have ID supplement if foreigner
+* height (supplement)
+* weight (supplement)
+* physical appearance (photos, supplement)
+* expiration date (supplement)
+
+day 14: 13 plus
+* not a wanted criminal
+
+day 15: 14
+day 16: 14
+day 17: 14
+
+day 18: 14 plus must stamp with reason for denial
+
+day 19: 18 plus
+* no Imporians
+
+day 20: 19
+
+day 21: 19 plus
+* must have grant of asylum if reason is asylum
+  (does not need entry permit or ID supplement)
