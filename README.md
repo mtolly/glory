@@ -20,6 +20,7 @@ Both a web API (intended for a mobile phone or similar) and controllers (Xbox 36
   * `V` starts a vote, where players use their controls to settle a choice up for debate
   * `Space` starts an inspection, where players use their controls to perform their assigned tasks
   * `C` gives a citation to a player
+  * `1` chooses a random player, e.g. to come up and control the tranquilizer gun
 
 ## Tech/Thanks
 
