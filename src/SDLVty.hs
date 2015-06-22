@@ -11,6 +11,8 @@ import Foreign.C
 import Control.Monad (forM_)
 import Control.Concurrent.STM
 import Data.Char (toLower)
+import qualified Graphics.UI.SDL.TTF as TTF
+import Graphics.UI.SDL.TTF.FFI (TTFFont)
 
 data Image = Image
   { imageWidth :: Int
@@ -90,11 +92,11 @@ cyan = SDL.Color 0 255 255 255
 white = SDL.Color 255 255 255 255
 
 cellWidth, cellHeight :: Int
-cellWidth = 10
-cellHeight = 15
+cellWidth = 12
+cellHeight = 20
 
-drawImage :: Image -> SDL.Renderer -> IO ()
-drawImage img rend = do
+drawImage :: Image -> TTFFont -> SDL.Renderer -> IO ()
+drawImage img font rend = do
   forM_ (zip [0..] $ imageData img) $ \(r, row) ->
     forM_ (zip [0..] row) $ \(c, (char, (fg, bg))) -> do
       let rect = SDL.Rect
@@ -112,13 +114,17 @@ drawImage img rend = do
       case char of
         ' ' -> return ()
         _ -> do
-          let SDL.Color vr vg vb va = fg
-          zero $ SDL.setRenderDrawColor rend vr vg vb va
-          zero $ with rect $ SDL.renderFillRect rend
+          psurf <- notNull $ TTF.renderTextSolid font [char] fg
+          ptex <- notNull $ SDL.createTextureFromSurface rend psurf
+          SDL.freeSurface psurf
+          zero $ with rect $ SDL.renderCopy rend ptex nullPtr
+          SDL.destroyTexture ptex
 
 mkVty :: Config -> IO Vty
 mkVty () = do
   zero $ SDL.initSubSystem SDL.SDL_INIT_VIDEO
+  zero TTF.init
+  font <- notNull $ TTF.openFont "saxmono.ttf" 15
   window <- notNull $ withCString "vty" $ \s -> notNull $ SDL.createWindow
     s -- title
     SDL.SDL_WINDOWPOS_UNDEFINED -- x
@@ -153,7 +159,7 @@ mkVty () = do
     { update = \pic -> do
       zero $ SDL.setRenderDrawColor rend 0 0 0 255
       zero $ SDL.renderClear rend
-      forM_ (reverse $ picLayers pic) $ \img -> drawImage img rend
+      forM_ (reverse $ picLayers pic) $ \img -> drawImage img font rend
       SDL.renderPresent rend
     , nextEvent = atomically $ readTQueue events
     , inputIface = ()
@@ -162,6 +168,8 @@ mkVty () = do
     , shutdown = do
       SDL.destroyRenderer rend
       SDL.destroyWindow window
+      TTF.closeFont font
+      TTF.quit
       SDL.quitSubSystem SDL.SDL_INIT_VIDEO
     }
 

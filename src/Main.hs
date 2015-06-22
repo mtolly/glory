@@ -158,7 +158,7 @@ main = do
       loop phase prev = do
         (w, h) <- Vty.displayBounds $ Vty.outputIface vty
         Vty.update vty $ draw w h connectTo prev phase
-        liftIO $ threadDelay 5000
+        liftIO $ threadDelay 10000
         sdlEvents <- untilNothing pollSDL
         unless (any isQuit sdlEvents) $ do
           vtyEvents <- atomically $ swapTVar vtyEvent []
