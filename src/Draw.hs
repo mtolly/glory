@@ -10,7 +10,7 @@ import           Data.Maybe      (listToMaybe)
 import qualified Data.Set        as Set
 import qualified Data.Time       as Time
 import qualified Graphics.UI.SDL as SDL
-import qualified Graphics.Vty    as Vty
+import qualified SDLVty    as Vty
 
 import           Core
 

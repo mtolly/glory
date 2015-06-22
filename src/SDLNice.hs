@@ -19,6 +19,9 @@ notNull act = do
 sdlCode :: (Eq a, Num a, MonadIO m) => a -> m a -> m ()
 sdlCode c = sdlCode' (== c)
 
+zero :: (Eq a, Num a, MonadIO m) => m a -> m ()
+zero = sdlCode 0
+
 -- | Extracts and throws an SDL error if the return code doesn't pass a test.
 sdlCode' :: (MonadIO m) => (a -> Bool) -> m a -> m ()
 sdlCode' p act = do

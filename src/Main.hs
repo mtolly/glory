@@ -21,7 +21,7 @@ import qualified Data.Set                 as Set
 import qualified Data.Text                as T
 import           Foreign                  (alloca, peek)
 import qualified Graphics.UI.SDL          as SDL
-import qualified Graphics.Vty             as Vty
+import qualified SDLVty             as Vty
 import qualified Network.HTTP.Types       as HTTP
 import           Network.Info             (IPv4 (..), getNetworkInterfaces,
                                            ipv4)
@@ -160,19 +160,23 @@ main = do
         Vty.update vty $ draw w h connectTo prev phase
         liftIO $ threadDelay 5000
         sdlEvents <- untilNothing pollSDL
-        vtyEvents <- atomically $ swapTVar vtyEvent []
-        apiEvents <- atomically $ swapTVar apiEvent []
-        let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
-            curr = foldr ($) prev $ map modifyButtons sdlEvents
-        nextPhase <- runUpdate (update (newPresses prev curr) keys apiEvents) phase
-        case nextPhase of
-          Just (phase', sfxs) -> do
-            mapM_ playSFX $ Set.toList sfxs
-            loop phase' curr
-          Nothing            -> return ()
+        unless (any isQuit sdlEvents) $ do
+          vtyEvents <- atomically $ swapTVar vtyEvent []
+          apiEvents <- atomically $ swapTVar apiEvent []
+          let keys = [ k | Vty.EvKey k _ <- vtyEvents ]
+              curr = foldr ($) prev $ map modifyButtons sdlEvents
+          nextPhase <- runUpdate (update (newPresses prev curr) keys apiEvents) phase
+          case nextPhase of
+            Just (phase', sfxs) -> do
+              mapM_ playSFX $ Set.toList sfxs
+              loop phase' curr
+            Nothing            -> return ()
 
       startState = Waiting{ phasePlayers = [], phaseTasks = [] }
       startButtons = map (const Set.empty) joys
+      isQuit = \case
+        SDL.QuitEvent{} -> True
+        _               -> False
 
   playSFX SFX_tis_100_boot
   loop startState startButtons

@@ -12,7 +12,7 @@ import           Data.Maybe                (mapMaybe)
 import qualified Data.Set                  as Set
 import qualified Data.Time                 as Time
 import qualified Graphics.UI.SDL           as SDL
-import qualified Graphics.Vty              as Vty
+import qualified SDLVty              as Vty
 import           System.Random.Shuffle     (shuffleM)
 
 import           Audio
