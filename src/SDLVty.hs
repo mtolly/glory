@@ -10,7 +10,6 @@ import Foreign
 import Foreign.C
 import Control.Monad (forM_)
 import Control.Concurrent.STM
-import Data.Char (toLower)
 import qualified Graphics.UI.SDL.TTF as TTF
 import Graphics.UI.SDL.TTF.FFI (TTFFont)
 
@@ -134,11 +133,11 @@ mkVty () = do
     SDL.SDL_WINDOW_RESIZABLE -- flags
   rend <- notNull $ SDL.createRenderer window (-1) 0
   events <- newTQueueIO
+  let gotKey k = atomically . writeTQueue events $ EvKey k []
   watch <- SDL.mkEventFilter $ \_ pevt -> do
     evt <- peek pevt
     case evt of
-      SDL.KeyboardEvent{ SDL.keyboardEventState = SDL.SDL_PRESSED, .. } -> do
-        let gotKey k = atomically . writeTQueue events $ EvKey k []
+      SDL.KeyboardEvent{ SDL.keyboardEventState = SDL.SDL_PRESSED, .. } ->
         case SDL.keysymKeycode keyboardEventKeysym of
           SDL.SDLK_RETURN -> gotKey KEnter
           SDL.SDLK_ESCAPE -> gotKey KEsc
@@ -149,9 +148,9 @@ mkVty () = do
           SDL.SDLK_LEFT -> gotKey KLeft
           SDL.SDLK_RIGHT -> gotKey KRight
           SDL.SDLK_BACKSPACE -> gotKey KBS
-          key -> SDL.getKeyName key >>= peekCString >>= \case
-            [ch] -> gotKey $ KChar $ toLower ch
-            _ -> return ()
+          _ -> return ()
+      SDL.TextInputEvent{..} ->
+        mapM_ (gotKey . KChar . toEnum . fromIntegral) textInputEventText
       _ -> return ()
     return 0
   SDL.addEventWatch watch nullPtr
