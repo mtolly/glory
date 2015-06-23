@@ -1,25 +1,30 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 module SDLVty where
 
-import qualified Graphics.UI.SDL as SDL
-import SDLNice
-import Data.List (transpose)
-import Foreign
-import Foreign.C
-import Control.Monad (forM_)
-import Control.Concurrent.STM
-import qualified Graphics.UI.SDL.TTF as TTF
-import Graphics.UI.SDL.TTF.FFI (TTFFont)
-import Data.IORef
-import qualified Data.Map as Map
-import System.IO.Unsafe (unsafePerformIO)
+import           Control.Concurrent.STM
+import           Control.Monad           (forM_)
+import qualified Data.ByteString         as B
+import           Data.ByteString.Unsafe  (unsafeUseAsCStringLen)
+import           Data.FileEmbed          (embedFile)
+import           Data.IORef
+import           Data.List               (transpose)
+import qualified Data.Map                as Map
+import           Foreign
+import           Foreign.C
+import qualified Graphics.UI.SDL         as SDL
+import qualified Graphics.UI.SDL.TTF     as TTF
+import           Graphics.UI.SDL.TTF.FFI (TTFFont)
+import           System.IO.Unsafe        (unsafePerformIO)
+
+import           SDLNice
 
 data Image = Image
-  { imageWidth :: Int
+  { imageWidth  :: Int
   , imageHeight :: Int
-  , imageData :: [[(Char, Attr)]] -- [row]
+  , imageData   :: [[(Char, Attr)]] -- [row]
   } deriving (Eq, Show)
 type Attr = (Color, Maybe Color)
 type Color = SDL.Color
@@ -154,11 +159,19 @@ drawImage img font rend = do
                 }
           zero $ with rect2 $ SDL.renderCopy rend ptex nullPtr
 
+foreign import ccall unsafe "TTF_OpenFontRW"
+  openFontRW :: Ptr SDL.RWops -> CInt -> CInt -> IO TTFFont
+
+theFont :: B.ByteString
+theFont = $(embedFile "04B03-U--misaki_gothic.ttf")
+
 mkVty :: Config -> IO Vty
 mkVty () = do
   zero $ SDL.initSubSystem SDL.SDL_INIT_VIDEO
   zero TTF.init
-  font <- notNull $ TTF.openFont "04B03-U--misaki_gothic.ttf" 8
+  font <- unsafeUseAsCStringLen theFont $ \(wav, len) -> do
+    rw <- notNull $ SDL.rwFromConstMem (castPtr wav) (fromIntegral len)
+    notNull $ openFontRW rw 1 8
   window <- notNull $ withCString "vty" $ \s -> notNull $ SDL.createWindow
     s -- title
     SDL.SDL_WINDOWPOS_UNDEFINED -- x
@@ -287,33 +300,33 @@ data Event
 -- when another update action is already then it's safe to call this on multiple threads.
 --
 -- \todo Remove explicit `shutdown` requirement.
-data Vty = Vty 
+data Vty = Vty
     { -- | Outputs the given Picture. Equivalent to 'outputPicture' applied to a display context
       -- implicitly managed by Vty. The managed display context is reset on resize.
-      update :: Picture -> IO ()
+      update      :: Picture -> IO ()
       -- | Get one Event object, blocking if necessary. This will refresh the terminal if the event
       -- is a 'EvResize'.
-    , nextEvent :: IO Event
+    , nextEvent   :: IO Event
       -- | The input interface. See 'Input'
-    , inputIface :: Input
+    , inputIface  :: Input
       -- | The output interface. See 'Output'
     , outputIface :: Output
       -- | Refresh the display. 'nextEvent' will refresh the display if a resize occurs.
       -- If other programs output to the terminal and mess up the display then the application might
       -- want to force a refresh.
-    , refresh :: IO ()
+    , refresh     :: IO ()
       -- | Clean up after vty.
       -- The above methods will throw an exception if executed after this is executed.
-    , shutdown :: IO () 
+    , shutdown    :: IO ()
     }
 
--- | The type of images to be displayed using 'update'.  
+-- | The type of images to be displayed using 'update'.
 --
 -- Can be constructed directly or using `picForImage`. Which provides an initial instance with
 -- reasonable defaults for picCursor and picBackground.
 data Picture = Picture
-    { picCursor :: Cursor
-    , picLayers :: [Image]
+    { picCursor     :: Cursor
+    , picLayers     :: [Image]
     , picBackground :: Background
     }
 
@@ -328,11 +341,11 @@ instance Show Picture where
 -- \todo The current attribute is always set to the default attributes at the start of updating the
 -- screen to a picture.
 data Background
-    = Background 
+    = Background
     { backgroundChar :: Char
     , backgroundAttr :: Attr
     }
-     -- | A ClearBackground is: 
+     -- | A ClearBackground is:
      --
      -- * the space character if there are remaining non-skip ops
      --
@@ -340,21 +353,21 @@ data Background
     | ClearBackground
 
 -- | A picture can be configured either to not show the cursor or show the cursor at the specified
--- character position. 
+-- character position.
 --
 -- There is not a 1 to 1 map from character positions to a row and column on the screen due to
 -- characters that take more than 1 column.
 --
 -- todo: The Cursor can be given a (character,row) offset outside of the visible bounds of the
 -- output region. In this case the cursor will not be shown.
-data Cursor = 
+data Cursor =
       NoCursor
     | Cursor Int Int
 
 -- | Create a picture for display for the given image. The picture will not have a displayed cursor
 -- and no background pattern (ClearBackground) will be used.
 picForImage :: Image -> Picture
-picForImage i = Picture 
+picForImage i = Picture
     { picCursor = NoCursor
     , picLayers = [i]
     , picBackground = ClearBackground
@@ -364,10 +377,10 @@ picForImage i = Picture
 --
 -- The picture will not have a displayed cursor and no background apttern (ClearBackgroun) will be
 -- used.
--- 
+--
 -- The first 'Image' is the top layer.
 picForLayers :: [Image] -> Picture
-picForLayers is = Picture 
+picForLayers is = Picture
     { picCursor = NoCursor
     , picLayers = is
     , picBackground = ClearBackground

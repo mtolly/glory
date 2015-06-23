@@ -9,6 +9,7 @@ extra-source-files:
   sound/*.wav
   sound/papers/*.wav
   sound/pinball/*.WAV
+  04B03-U--misaki_gothic.ttf
 
 executable glory
   main-is:              Main.hs
