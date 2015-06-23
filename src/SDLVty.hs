@@ -12,6 +12,9 @@ import Control.Monad (forM_)
 import Control.Concurrent.STM
 import qualified Graphics.UI.SDL.TTF as TTF
 import Graphics.UI.SDL.TTF.FFI (TTFFont)
+import Data.IORef
+import qualified Data.Map as Map
+import System.IO.Unsafe (unsafePerformIO)
 
 data Image = Image
   { imageWidth :: Int
@@ -94,6 +97,30 @@ cellWidth, cellHeight :: Int
 cellWidth = 11
 cellHeight = 20
 
+type TTFInput = (TTFFont, String, Word8, Word8, Word8, Word8, SDL.Renderer)
+
+{-# NOINLINE textSolidCache #-}
+textSolidCache :: IORef (Map.Map TTFInput SDL.Texture)
+textSolidCache = unsafePerformIO $ newIORef Map.empty
+
+renderTextSolid :: TTFFont -> String -> SDL.Color -> SDL.Renderer -> IO SDL.Texture
+renderTextSolid font str col@(SDL.Color r g b a) rend = do
+  cache <- readIORef textSolidCache
+  let key = (font, str, r, g, b, a, rend)
+  case Map.lookup key cache of
+    Just tex -> return tex
+    Nothing -> do
+      tex <- renderTextSolid' font str col rend
+      writeIORef textSolidCache $ Map.insert key tex cache
+      return tex
+
+renderTextSolid' :: TTFFont -> String -> SDL.Color -> SDL.Renderer -> IO SDL.Texture
+renderTextSolid' font str color rend = do
+  psurf <- notNull $ TTF.renderTextSolid font str color
+  ptex <- notNull $ SDL.createTextureFromSurface rend psurf
+  SDL.freeSurface psurf
+  return ptex
+
 drawImage :: Image -> TTFFont -> SDL.Renderer -> IO ()
 drawImage img font rend = do
   forM_ (zip [0..] $ imageData img) $ \(r, row) ->
@@ -113,14 +140,12 @@ drawImage img font rend = do
       case char of
         ' ' -> return ()
         _ -> do
-          psurf <- notNull $ TTF.renderTextSolid font [char] fg
-          ptex <- notNull $ SDL.createTextureFromSurface rend psurf
+          ptex <- renderTextSolid font [char] fg rend
           (charWidth, charHeight) <- alloca $ \pw -> alloca $ \ph -> do
             zero $ SDL.queryTexture ptex nullPtr nullPtr pw ph
             w <- peek pw
             h <- peek ph
             return (fromIntegral w * 2, fromIntegral h * 2)
-          SDL.freeSurface psurf
           let rect2 = SDL.Rect
                 { SDL.rectX = SDL.rectX rect + (fromIntegral cellWidth - charWidth) `quot` 2
                 , SDL.rectY = SDL.rectY rect
@@ -128,7 +153,6 @@ drawImage img font rend = do
                 , SDL.rectH = charHeight
                 }
           zero $ with rect2 $ SDL.renderCopy rend ptex nullPtr
-          SDL.destroyTexture ptex
 
 mkVty :: Config -> IO Vty
 mkVty () = do
