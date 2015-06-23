@@ -4,7 +4,6 @@
 {-# LANGUAGE NondecreasingIndentation #-}
 {-# LANGUAGE OverloadedStrings        #-}
 {-# LANGUAGE PatternSynonyms          #-}
-{-# LANGUAGE TemplateHaskell          #-}
 {-# LANGUAGE TupleSections            #-}
 module Main (main) where
 
@@ -16,7 +15,6 @@ import           Control.Exception        (bracket)
 import           Control.Monad            (forM, forever, liftM, unless)
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy     as BL
-import           Data.FileEmbed           (embedFile)
 import           Data.List                (intercalate)
 import qualified Data.Set                 as Set
 import qualified Data.Text                as T
@@ -40,6 +38,7 @@ import           Draw
 import           SDLMixer
 import           SDLNice
 import           Update
+import           Resources
 
 -- | Returns Just an event if there is one currently in the queue.
 pollSDL :: (MonadIO m) => m (Maybe SDL.Event)
@@ -147,7 +146,7 @@ main = do
         good -> Just $ intercalate ", " [ show ip ++ ":" ++ show port | ip <- good ]
       port = 4200
   apiEvent <- newTVarIO []
-  let remote = BL.fromChunks [$(embedFile "remote/index.html")]
+  let remote = BL.fromChunks [theRemote]
   _ <- forkIO $ Warp.run port $ \req f ->
     case map T.toUpper $ filter (not . T.null) $ Wai.pathInfo req of
       [code, "YES"] -> do

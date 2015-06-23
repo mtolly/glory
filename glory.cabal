@@ -40,8 +40,9 @@ executable glory
     , text
     , bytestring
     , stm
-    , file-embed
     , network-info
+    
+    , glory-resources
 
   hs-source-dirs:       src
   default-language:     Haskell2010

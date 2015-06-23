@@ -4,14 +4,11 @@ A made-in-one-day shim implementing part of the @vty@ package using SDL.
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
 module SDLVty where
 
 import           Control.Concurrent.STM
 import           Control.Monad           (forM_)
-import qualified Data.ByteString         as B
 import           Data.ByteString.Unsafe  (unsafeUseAsCStringLen)
-import           Data.FileEmbed          (embedFile)
 import           Data.IORef
 import           Data.List               (transpose)
 import qualified Data.Map                as Map
@@ -23,6 +20,7 @@ import           Graphics.UI.SDL.TTF.FFI (TTFFont)
 import           System.IO.Unsafe        (unsafePerformIO)
 
 import           SDLNice
+import           Resources
 
 data Image = Image
   { imageWidth  :: Int
@@ -164,9 +162,6 @@ drawImage img font rend = do
 
 foreign import ccall unsafe "TTF_OpenFontRW"
   openFontRW :: Ptr SDL.RWops -> CInt -> CInt -> IO TTFFont
-
-theFont :: B.ByteString
-theFont = $(embedFile "04B03-U--misaki_gothic.ttf")
 
 mkVty :: Config -> IO Vty
 mkVty () = do

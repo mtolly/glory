@@ -1,37 +1,16 @@
-{-# LANGUAGE LambdaCase      #-}
-{-# LANGUAGE TemplateHaskell #-}
-module Audio where
+module Audio
+( SFX(..)
+, withChunk
+, withChunks
+) where
 
-import qualified Data.ByteString        as B
 import           Data.ByteString.Unsafe (unsafeUseAsCStringLen)
-import           Data.FileEmbed         (embedFile)
 import           Foreign                (castPtr, withMany)
 import qualified Graphics.UI.SDL        as SDL
 
 import           SDLMixer
 import           SDLNice
-
-data SFX
-  = SFX_printer_line
-  | SFX_time_up
-  | SFX_stamp_down
-  | SFX_border_callguards
-  | SFX_monster_yes
-  | SFX_monster_no
-  | SFX_tis_100_boot
-  | SFX_pinball_8
-  deriving (Eq, Ord, Show, Read, Enum, Bounded)
-
-sfxWAV :: SFX -> B.ByteString
-sfxWAV = \case
-  SFX_printer_line      -> $(embedFile "sound/papers/printer-line.wav")
-  SFX_time_up           -> $(embedFile "sound/papers/time-up.wav")
-  SFX_stamp_down        -> $(embedFile "sound/papers/stamp-down.wav")
-  SFX_border_callguards -> $(embedFile "sound/papers/border-callguards.wav")
-  SFX_monster_yes       -> $(embedFile "sound/steam-clicker-yes.wav")
-  SFX_monster_no        -> $(embedFile "sound/steam-clicker-no.wav")
-  SFX_tis_100_boot      -> $(embedFile "sound/tis-100-boot.wav")
-  SFX_pinball_8         -> $(embedFile "sound/pinball/SOUND8.WAV")
+import           Resources
 
 withChunk :: SFX -> (MixChunk -> IO a) -> IO a
 withChunk sfx act = unsafeUseAsCStringLen (sfxWAV sfx) $ \(wav, len) -> do
