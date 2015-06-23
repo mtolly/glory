@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                      #-}
 {-# LANGUAGE LambdaCase               #-}
 {-# LANGUAGE MultiWayIf               #-}
 {-# LANGUAGE NondecreasingIndentation #-}
@@ -21,7 +22,11 @@ import qualified Data.Set                 as Set
 import qualified Data.Text                as T
 import           Foreign                  (alloca, peek)
 import qualified Graphics.UI.SDL          as SDL
-import qualified SDLVty             as Vty
+#ifdef SDL_DISPLAY
+import qualified SDLVty                   as Vty
+#else
+import qualified Graphics.Vty             as Vty
+#endif
 import qualified Network.HTTP.Types       as HTTP
 import           Network.Info             (IPv4 (..), getNetworkInterfaces,
                                            ipv4)

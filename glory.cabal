@@ -11,6 +11,10 @@ extra-source-files:
   sound/pinball/*.WAV
   04B03-U--misaki_gothic.ttf
 
+flag SDLDisplay
+  description: use SDL video instead of terminal curses output
+  default: False
+
 executable glory
   main-is:              Main.hs
   other-modules:
@@ -38,9 +42,19 @@ executable glory
     , stm
     , file-embed
     , network-info
-    , sdl2-ttf
 
   hs-source-dirs:       src
   default-language:     Haskell2010
   ghc-options:          -Wall -threaded
   extra-libraries:      SDL2_mixer
+
+  if flag(SDLDisplay)
+    other-modules:
+      SDLVty
+    build-depends:
+      sdl2-ttf
+    cpp-options:
+      -DSDL_DISPLAY
+  else
+    build-depends:
+      vty

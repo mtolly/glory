@@ -1,3 +1,6 @@
+{- |
+A made-in-one-day shim implementing part of the @vty@ package using SDL.
+-}
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RecordWildCards #-}

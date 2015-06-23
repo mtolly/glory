@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP             #-}
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE MultiWayIf      #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -12,7 +13,11 @@ import           Data.Maybe                (mapMaybe)
 import qualified Data.Set                  as Set
 import qualified Data.Time                 as Time
 import qualified Graphics.UI.SDL           as SDL
-import qualified SDLVty              as Vty
+#ifdef SDL_DISPLAY
+import qualified SDLVty                    as Vty
+#else
+import qualified Graphics.Vty              as Vty
+#endif
 import           System.Random.Shuffle     (shuffleM)
 
 import           Audio
