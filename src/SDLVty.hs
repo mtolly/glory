@@ -91,7 +91,7 @@ cyan = SDL.Color 0 255 255 255
 white = SDL.Color 255 255 255 255
 
 cellWidth, cellHeight :: Int
-cellWidth = 12
+cellWidth = 11
 cellHeight = 20
 
 drawImage :: Image -> TTFFont -> SDL.Renderer -> IO ()
@@ -115,15 +115,26 @@ drawImage img font rend = do
         _ -> do
           psurf <- notNull $ TTF.renderTextSolid font [char] fg
           ptex <- notNull $ SDL.createTextureFromSurface rend psurf
+          (charWidth, charHeight) <- alloca $ \pw -> alloca $ \ph -> do
+            zero $ SDL.queryTexture ptex nullPtr nullPtr pw ph
+            w <- peek pw
+            h <- peek ph
+            return (fromIntegral w * 2, fromIntegral h * 2)
           SDL.freeSurface psurf
-          zero $ with rect $ SDL.renderCopy rend ptex nullPtr
+          let rect2 = SDL.Rect
+                { SDL.rectX = SDL.rectX rect + (fromIntegral cellWidth - charWidth) `quot` 2
+                , SDL.rectY = SDL.rectY rect
+                , SDL.rectW = charWidth
+                , SDL.rectH = charHeight
+                }
+          zero $ with rect2 $ SDL.renderCopy rend ptex nullPtr
           SDL.destroyTexture ptex
 
 mkVty :: Config -> IO Vty
 mkVty () = do
   zero $ SDL.initSubSystem SDL.SDL_INIT_VIDEO
   zero TTF.init
-  font <- notNull $ TTF.openFont "saxmono.ttf" 15
+  font <- notNull $ TTF.openFont "04B03-U--misaki_gothic.ttf" 8
   window <- notNull $ withCString "vty" $ \s -> notNull $ SDL.createWindow
     s -- title
     SDL.SDL_WINDOWPOS_UNDEFINED -- x
@@ -141,7 +152,6 @@ mkVty () = do
         case SDL.keysymKeycode keyboardEventKeysym of
           SDL.SDLK_RETURN -> gotKey KEnter
           SDL.SDLK_ESCAPE -> gotKey KEsc
-          SDL.SDLK_SPACE -> gotKey $ KChar ' '
           SDL.SDLK_DELETE -> gotKey KDel
           SDL.SDLK_UP -> gotKey KUp
           SDL.SDLK_DOWN -> gotKey KDown
@@ -159,6 +169,16 @@ mkVty () = do
       zero $ SDL.setRenderDrawColor rend 0 0 0 255
       zero $ SDL.renderClear rend
       forM_ (reverse $ picLayers pic) $ \img -> drawImage img font rend
+      case picCursor pic of
+        NoCursor -> return ()
+        Cursor c r -> do
+          let rect = SDL.Rect
+                (fromIntegral $ c * cellWidth)
+                (fromIntegral $ r * cellHeight)
+                (fromIntegral cellWidth)
+                (fromIntegral cellHeight)
+          zero $ SDL.setRenderDrawColor rend 0 0 255 255
+          zero $ with rect $ SDL.renderDrawRect rend
       SDL.renderPresent rend
     , nextEvent = atomically $ readTQueue events
     , inputIface = ()
