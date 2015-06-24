@@ -116,8 +116,11 @@ withVty cfg = bracket (Vty.mkVty cfg) Vty.shutdown
 
 main :: IO ()
 main = do
+
+#ifndef SDL_DISPLAY
   b <- hIsTerminalDevice stdout
   unless b $ error "Try again comrade. TTY is required"
+#endif
 
   withSDL [SDL.SDL_INIT_JOYSTICK, SDL.SDL_INIT_AUDIO] $ do
 
