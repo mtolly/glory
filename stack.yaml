@@ -1,0 +1,8 @@
+flags: {}
+packages:
+- '.'
+- glory-resources/
+extra-deps:
+- sdl2-ttf-0.2.1
+- vty-5.2.9
+resolver: nightly-2015-06-28

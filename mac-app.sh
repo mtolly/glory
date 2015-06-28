@@ -2,7 +2,7 @@
 set -e
 set -u
 
-brew install sdl2 sdl2_mixer
+brew install sdl2 sdl2_mixer sdl2_ttf
 
 cabal sandbox init
 cabal install --only-dep . ./glory-resources --flags SDLDisplay
