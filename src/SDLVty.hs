@@ -8,10 +8,13 @@ module SDLVty where
 
 import           Control.Concurrent.STM
 import           Control.Monad           (forM_)
+import qualified Data.ByteString         as B
 import           Data.ByteString.Unsafe  (unsafeUseAsCStringLen)
 import           Data.IORef
 import           Data.List               (transpose)
 import qualified Data.Map                as Map
+import qualified Data.Text               as T
+import qualified Data.Text.Encoding      as TE
 import           Foreign
 import           Foreign.C
 import qualified Graphics.UI.SDL         as SDL
@@ -19,8 +22,8 @@ import qualified Graphics.UI.SDL.TTF     as TTF
 import           Graphics.UI.SDL.TTF.FFI (TTFFont)
 import           System.IO.Unsafe        (unsafePerformIO)
 
-import           SDLNice
 import           Resources
+import           SDLNice
 
 data Image = Image
   { imageWidth  :: Int
@@ -122,7 +125,7 @@ renderTextSolid font str col@(SDL.Color r g b a) rend = do
 
 renderTextSolid' :: TTFFont -> String -> SDL.Color -> SDL.Renderer -> IO SDL.Texture
 renderTextSolid' font str color rend = do
-  psurf <- notNull $ TTF.renderTextSolid font str color
+  psurf <- notNull $ TTF.renderUTF8Solid font str color
   ptex <- notNull $ SDL.createTextureFromSurface rend psurf
   SDL.freeSurface psurf
   return ptex
@@ -194,8 +197,9 @@ mkVty () = do
           SDL.SDLK_RIGHT -> gotKey KRight
           SDL.SDLK_BACKSPACE -> gotKey KBS
           _ -> return ()
-      SDL.TextInputEvent{..} ->
-        mapM_ (gotKey . KChar . toEnum . fromIntegral) textInputEventText
+      SDL.TextInputEvent{..} -> case TE.decodeUtf8' $ B.pack $ map fromIntegral textInputEventText of
+        Left  err  -> print err
+        Right text -> mapM_ (gotKey . KChar) $ T.unpack text
       _ -> return ()
     return 0
   SDL.addEventWatch watch nullPtr
