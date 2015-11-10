@@ -42,6 +42,7 @@ executable glory
   default-language:     Haskell2010
   ghc-options:          -Wall -threaded
   extra-libraries:      SDL2_mixer
+  build-tools:          c2hs
 
   if flag(SDLDisplay)
     other-modules:
