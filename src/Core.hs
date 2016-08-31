@@ -6,8 +6,8 @@ module Core
 , Ortho(..)
 ) where
 
-import qualified Data.Time       as Time
-import qualified Graphics.UI.SDL as SDL
+import qualified Data.Time as Time
+import qualified SDL.Raw   as SDL
 
 data Phase
   = Waiting

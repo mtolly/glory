@@ -5,7 +5,7 @@ import           Control.Monad          (unless)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Foreign                (Ptr, nullPtr, (.|.))
 import           Foreign.C              (peekCString)
-import qualified Graphics.UI.SDL        as SDL
+import qualified SDL.Raw                as SDL
 
 -- | Extracts and throws an SDL error if the action returns a null pointer.
 notNull :: (MonadIO m) => m (Ptr a) -> m (Ptr a)

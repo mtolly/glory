@@ -7,20 +7,21 @@ A made-in-one-day shim implementing part of the @vty@ package using SDL.
 module SDLVty where
 
 import           Control.Concurrent.STM
-import           Control.Monad           (forM_)
-import qualified Data.ByteString         as B
-import           Data.ByteString.Unsafe  (unsafeUseAsCStringLen)
+import           Control.Monad          (forM_)
+import qualified Data.ByteString        as B
+import           Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import           Data.IORef
-import           Data.List               (transpose)
-import qualified Data.Map                as Map
-import qualified Data.Text               as T
-import qualified Data.Text.Encoding      as TE
+import           Data.List              (transpose)
+import qualified Data.Map               as Map
+import qualified Data.Text              as T
+import qualified Data.Text.Encoding     as TE
 import           Foreign
 import           Foreign.C
-import qualified Graphics.UI.SDL         as SDL
-import qualified Graphics.UI.SDL.TTF     as TTF
-import           Graphics.UI.SDL.TTF.FFI (TTFFont)
-import           System.IO.Unsafe        (unsafePerformIO)
+import qualified SDL                    as SDLHigh
+import qualified SDL.Raw                as SDL
+import qualified SDL.TTF                as TTF
+import           SDL.TTF.FFI            (TTFFont)
+import           System.IO.Unsafe       (unsafePerformIO)
 
 import           Resources
 import           SDLNice
@@ -125,7 +126,7 @@ renderTextSolid font str col@(SDL.Color r g b a) rend = do
 
 renderTextSolid' :: TTFFont -> String -> SDL.Color -> SDL.Renderer -> IO SDL.Texture
 renderTextSolid' font str color rend = do
-  psurf <- notNull $ TTF.renderUTF8Solid font str color
+  psurf <- notNull $ (\(SDLHigh.Surface psurf _) -> psurf) <$> TTF.renderUTF8Solid font str color
   ptex <- notNull $ SDL.createTextureFromSurface rend psurf
   SDL.freeSurface psurf
   return ptex

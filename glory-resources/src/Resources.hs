@@ -1,8 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Resources where
 
-import Data.FileEmbed (embedFile)
 import qualified Data.ByteString as B
+import           Data.FileEmbed  (embedFile)
 
 data SFX
   = SFX_printer_line

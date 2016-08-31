@@ -12,7 +12,7 @@ import           Control.Monad.Trans.RWS   (RWST (..), execRWST, get, put, tell)
 import           Data.Maybe                (mapMaybe)
 import qualified Data.Set                  as Set
 import qualified Data.Time                 as Time
-import qualified Graphics.UI.SDL           as SDL
+import qualified SDL.Raw                   as SDL
 #ifdef SDL_DISPLAY
 import qualified SDLVty                    as Vty
 #else

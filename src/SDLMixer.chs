@@ -1,11 +1,11 @@
 module SDLMixer where
 
-import Foreign
-import Foreign.C
-import qualified Graphics.UI.SDL as SDL
-import Control.Exception (bracket_)
+import           Control.Exception (bracket_)
+import           Foreign
+import           Foreign.C
+import qualified SDL.Raw           as SDL
 
-import SDLNice
+import           SDLNice
 
 #include <SDL_mixer.h>
 

@@ -4,17 +4,17 @@
 {-# LANGUAGE RecordWildCards #-}
 module Draw (draw) where
 
-import           Control.Monad   (guard)
-import           Data.Fixed      (Milli)
-import           Data.List       (intercalate)
-import           Data.Maybe      (listToMaybe)
-import qualified Data.Set        as Set
-import qualified Data.Time       as Time
-import qualified Graphics.UI.SDL as SDL
+import           Control.Monad (guard)
+import           Data.Fixed    (Milli)
+import           Data.List     (intercalate)
+import           Data.Maybe    (listToMaybe)
+import qualified Data.Set      as Set
+import qualified Data.Time     as Time
+import qualified SDL.Raw       as SDL
 #ifdef SDL_DISPLAY
-import qualified SDLVty          as Vty
+import qualified SDLVty        as Vty
 #else
-import qualified Graphics.Vty    as Vty
+import qualified Graphics.Vty  as Vty
 #endif
 
 import           Core

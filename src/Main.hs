@@ -19,7 +19,7 @@ import           Data.List                (intercalate)
 import qualified Data.Set                 as Set
 import qualified Data.Text                as T
 import           Foreign                  (alloca, peek)
-import qualified Graphics.UI.SDL          as SDL
+import qualified SDL.Raw                  as SDL
 #ifdef SDL_DISPLAY
 import qualified SDLVty                   as Vty
 #else
@@ -35,10 +35,10 @@ import           System.IO                (hIsTerminalDevice, stdout)
 import           Audio
 import           Core
 import           Draw
+import           Resources
 import           SDLMixer
 import           SDLNice
 import           Update
-import           Resources
 
 -- | Returns Just an event if there is one currently in the queue.
 pollSDL :: (MonadIO m) => m (Maybe SDL.Event)

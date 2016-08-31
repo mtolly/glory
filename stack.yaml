@@ -1,8 +1,8 @@
 flags: {}
 packages:
 - '.'
-- glory-resources/
+- location: glory-resources/
+  extra-dep: true
 extra-deps:
-- sdl2-ttf-0.2.1
-- vty-5.2.9
-resolver: lts-3.13
+- sdl2-ttf-1.0.0
+resolver: nightly-2016-08-29

@@ -6,11 +6,11 @@ module Audio
 
 import           Data.ByteString.Unsafe (unsafeUseAsCStringLen)
 import           Foreign                (castPtr, withMany)
-import qualified Graphics.UI.SDL        as SDL
+import qualified SDL.Raw                as SDL
 
+import           Resources
 import           SDLMixer
 import           SDLNice
-import           Resources
 
 withChunk :: SFX -> (MixChunk -> IO a) -> IO a
 withChunk sfx act = unsafeUseAsCStringLen (sfxWAV sfx) $ \(wav, len) -> do
